@@ -24,8 +24,8 @@ import com.google.android.gms.common.util.IOUtils;
 import ai.tech5.finger.utils.Finger;
 
 import in.nprime.jp2.JP2Encoder;
+import io.mosip.mock.sbi.sdk.FingerIsoEncoder;
 import npr.util.BioFace;
-import npr.util.BioFinger;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +76,7 @@ public abstract class BioDevice {
             throw new RuntimeException("Unable to decode captured face image");
         }
         byte[] jp2bytes = new JP2Encoder(bmp).setCompressionRatio(35).encode();
-        byte[] isoBytes = BioFace.generateFaceISO2011(jp2bytes, bmp.getHeight(), bmp.getWidth(), "02");
+        byte[] isoBytes = BioFace.generateFaceISO2011(jp2bytes, bmp.getHeight(), bmp.getWidth(), "01");
 
         Uri isoUri = Uri.fromFile(getTempFile(appContext));
         saveByteArray(isoBytes, isoUri);
@@ -102,18 +102,7 @@ public abstract class BioDevice {
     }
 
     private Uri generateFingerIsoUri(Finger finger) {
-        Bitmap bmp = BitmapFactory.decodeByteArray(finger.primaryImage, 0, finger.primaryImage.length);
-        if (bmp == null) {
-            throw new RuntimeException("Unable to decode captured finger image");
-        }
-        byte[] jp2bytes = new JP2Encoder(bmp).setCompressionRatio(35).encode();
-        // position as a 2-digit hex string (ANSI position 1..10 -> "01".."0A");
-        // "04" is the ISO 19794-4 compression code for JPEG2000. Height/width order
-        // mirrors the working face path (generateFaceIsoUri).
-        String positionHex = String.format(Locale.ROOT, "%02X", finger.pos);
-        byte[] isoBytes = BioFinger.generateFingerprintISO2011(
-                jp2bytes, bmp.getHeight(), bmp.getWidth(), positionHex, "04");
-
+        byte[] isoBytes = FingerIsoEncoder.encode(finger.primaryImage, finger.pos);
         Uri isoUri = Uri.fromFile(getTempFile(appContext));
         saveByteArray(isoBytes, isoUri);
         return isoUri;

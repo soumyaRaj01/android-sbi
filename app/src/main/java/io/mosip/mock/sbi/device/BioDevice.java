@@ -25,6 +25,7 @@ import ai.tech5.finger.utils.Finger;
 
 import in.nprime.jp2.JP2Encoder;
 import io.mosip.mock.sbi.sdk.FingerIsoEncoder;
+import io.mosip.mock.sbi.utility.FingerPosition;
 import npr.util.BioFace;
 
 import java.io.File;
@@ -35,7 +36,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -92,7 +92,7 @@ public abstract class BioDevice {
             if (finger == null || finger.primaryImage == null || finger.primaryImage.length == 0) {
                 continue;
             }
-            String segmentName = getFingerSegmentName(finger.pos);
+            String segmentName = FingerPosition.nameOf(finger.pos);
             if (segmentName == null) {
                 continue; // unknown / unmapped finger position
             }
@@ -106,22 +106,6 @@ public abstract class BioDevice {
         Uri isoUri = Uri.fromFile(getTempFile(appContext));
         saveByteArray(isoBytes, isoUri);
         return isoUri;
-    }
-
-    private String getFingerSegmentName(int pos) {
-        switch (pos) {
-            case 1:  return DeviceConstants.BIO_NAME_RIGHT_THUMB;
-            case 2:  return DeviceConstants.BIO_NAME_RIGHT_INDEX;
-            case 3:  return DeviceConstants.BIO_NAME_RIGHT_MIDDLE;
-            case 4:  return DeviceConstants.BIO_NAME_RIGHT_RING;
-            case 5:  return DeviceConstants.BIO_NAME_RIGHT_LITTLE;
-            case 6:  return DeviceConstants.BIO_NAME_LEFT_THUMB;
-            case 7:  return DeviceConstants.BIO_NAME_LEFT_INDEX;
-            case 8:  return DeviceConstants.BIO_NAME_LEFT_MIDDLE;
-            case 9:  return DeviceConstants.BIO_NAME_LEFT_RING;
-            case 10: return DeviceConstants.BIO_NAME_LEFT_LITTLE;
-            default: return null;
-        }
     }
 
     public abstract Map<String, Uri> captureFingersModality(int deviceSubId, String[] bioSubType, String[] exception);

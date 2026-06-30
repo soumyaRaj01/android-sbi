@@ -153,7 +153,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                         break;
                     case "finger":
                         T5Capture capture = new T5Capture(this);
-                        capture.capture(this, this, getMissingFingerIds(exception), deviceSubId);
+                        capture.capture(this, this, null, deviceSubId);
                         // The flow will continue in the callback methods below
                         break;
                     case "iris":
@@ -172,20 +172,6 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                 captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
             }
         }, responseDelay);
-    }
-
-    private ArrayList<Integer> getMissingFingerIds(String[] exceptions) {
-        if (exceptions == null || exceptions.length == 0) {
-            return null;
-        }
-        ArrayList<Integer> ids = new ArrayList<>();
-        for (String ex : exceptions) {
-            int pos = FingerPosition.positionOf(ex);
-            if (pos > 0) {
-                ids.add(pos);
-            }
-        }
-        return ids.isEmpty() ? null : ids;
     }
 
     @Override

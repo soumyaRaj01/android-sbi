@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -164,7 +165,7 @@ public class ClientActivity extends AppCompatActivity {
         if (btnRCapture != null) {
             btnRCapture.setOnClickListener(view -> {
                 textBox.setText("");
-                capture(".rCapture", REQUEST_REG_CAPTURE);
+                capture(".rCapture", REQUEST_REG_CAPTURE, null);
             });
         }
 
@@ -176,7 +177,11 @@ public class ClientActivity extends AppCompatActivity {
 
         btnCapture.setOnClickListener(view -> {
             textBox.setText("");
-            capture(".Capture", REQUEST_AUTH_CAPTURE);
+            if ("Finger".equalsIgnoreCase(selectedDeviceType)) {
+                showFingerSlapDialog();
+            } else {
+                capture(".Capture", REQUEST_AUTH_CAPTURE, null);
+            }
         });
 
         if (btnDeviceKeyExport != null) {
@@ -312,7 +317,7 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
-    private void capture(String action, int requestCode) {
+    private void capture(String action, int requestCode, FingerSlab slab) {
         try {
             Intent intent = new Intent();
             intent.setAction(appID + action);
@@ -342,6 +347,11 @@ public class ClientActivity extends AppCompatActivity {
                 bio.deviceId = serialNo;
                 bio.deviceSubId = "0";
                 bio.previousHash = "";
+                // Finger slap chosen in the UI sets the slap fields; the device segments by deviceSubId.
+                if (slab != null) {
+                    bio.deviceSubId = String.valueOf(slab.deviceSubId);
+                    bio.count = String.valueOf(slab.count);
+                }
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
                 captureRequestDto.bio = mosipBioRequest;
@@ -365,6 +375,37 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
+
+    /** Asks the user which finger slap to capture, then fires the capture with that slap. */
+    private void showFingerSlapDialog() {
+        FingerSlab[] slabs = FingerSlab.values();
+        String[] labels = new String[slabs.length];
+        for (int i = 0; i < slabs.length; i++) {
+            labels[i] = slabs[i].label;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Select Slap")
+                .setItems(labels, (dialog, which) ->
+                        capture(".Capture", REQUEST_AUTH_CAPTURE, slabs[which]))
+                .show();
+    }
+
+    /** Slaps offered in the slap dialog, with the deviceSubId and finger count each maps to. */
+    private enum FingerSlab {
+        LEFT_FOUR("Left 4 Fingers", DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT, 4),
+        RIGHT_FOUR("Right 4 Fingers", DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT, 4),
+        TWO_THUMBS("2 Thumbs", DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB, 2);
+
+        final String label;
+        final int deviceSubId;
+        final int count;
+
+        FingerSlab(String label, int deviceSubId, int count) {
+            this.label = label;
+            this.deviceSubId = deviceSubId;
+            this.count = count;
+        }
+    }
 
     private void showResponse(String responseLabel, String data) {
         emptyScreen.setVisibility(View.GONE);

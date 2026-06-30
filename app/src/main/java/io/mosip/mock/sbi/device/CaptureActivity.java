@@ -5,7 +5,6 @@ import static io.mosip.mock.sbi.utility.DeviceConstants.*;
 import ai.tech5.finger.utils.FingerCaptureResult;
 import ai.tech5.finger.utils.T5FingerCapturedListener;
 import ai.tech5.pheonix.capture.controller.FaceCaptureListener;
-import ai.tech5.sdk.abis.T5AirSnap.T5AirSnap;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
@@ -35,6 +34,8 @@ import io.mosip.mock.sbi.sdk.T5FaceCapture;
 import io.mosip.mock.sbi.utility.DeviceConstants;
 
 import com.phoenixcapture.camerakit.FaceBox;
+import io.mosip.mock.sbi.utility.DeviceErrorCodes;
+import io.mosip.mock.sbi.utility.FingerPosition;
 
 /**
  * @author NPrime Technologies
@@ -43,6 +44,8 @@ import com.phoenixcapture.camerakit.FaceBox;
 public class CaptureActivity extends AppCompatActivity implements T5FingerCapturedListener, FaceCaptureListener {
     private static final int CAMERA_PERMISSION_CODE = 100;
     private static final String[] APP_PERMISSIONS = {Manifest.permission.CAMERA};
+
+    private static final int CAPTURE_FAILURE_STATUS = Integer.parseInt(DeviceErrorCodes.INVALID_JSON);
 
     private int faceQualityScore;
     private int fingerQualityScore;
@@ -57,14 +60,9 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     private long responseDelay;
     private int captureTimeout;
 
-//    private T5AirSnap m_cellSdk;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_rcapture);
-
-//        m_cellSdk = new T5AirSnap(this);
 
         modality = getIntent().getStringExtra("modality");
         deviceSubId = getIntent().getIntExtra("deviceSubId", 1);
@@ -171,7 +169,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                captureFailed(-301, e.getMessage());
+                captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
             }
         }, responseDelay);
     }
@@ -180,33 +178,33 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     public void onSuccess(FingerCaptureResult result) {
         try {
             if (result == null || result.fingers == null || result.fingers.isEmpty()) {
-                captureFailed(-301, "No finger data captured");
+                captureFailed(CAPTURE_FAILURE_STATUS, "No finger data captured");
                 return;
             }
             Map<String, Uri> uris = bioDevice.generateFingerIsoUris(result.fingers);
             if (uris.isEmpty()) {
-                captureFailed(-301, "No valid finger data captured");
+                captureFailed(CAPTURE_FAILURE_STATUS, "No valid finger data captured");
                 return;
             }
             captureSuccessful(uris, fingerQualityScore);
         } catch (Exception e) {
-            captureFailed(-301, e.getMessage());
+            captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
         }
     }
 
     @Override
     public void onFailure(String errorMessage) {
-        captureFailed(-301, errorMessage);
+        captureFailed(CAPTURE_FAILURE_STATUS, errorMessage);
     }
 
     @Override
     public void onTimedout() {
-        captureFailed(-301, "Capture timeout");
+        captureFailed(CAPTURE_FAILURE_STATUS, "Capture timeout");
     }
 
     @Override
     public void onCancelled() {
-        captureFailed(-301, "Capture cancelled by user");
+        captureFailed(CAPTURE_FAILURE_STATUS, "Capture cancelled by user");
     }
 
     @Override
@@ -214,20 +212,20 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         try {
             byte[] capturedData = (faceImage != null && faceImage.length > 0) ? faceImage : fullFrameImage;
             if (capturedData == null || capturedData.length == 0) {
-                captureFailed(-301, "No face data captured");
+                captureFailed(CAPTURE_FAILURE_STATUS, "No face data captured");
                 return;
             }
             Map<String, Uri> uris = new HashMap<>();
             uris.put("", bioDevice.generateFaceIsoUri(capturedData));
             captureSuccessful(uris, faceQualityScore);
         } catch (Exception e) {
-            captureFailed(-301, e.getMessage());
+            captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
         }
     }
 
     @Override
     public void OnFaceCaptureFailed(String errorMessage) {
-        captureFailed(-301, errorMessage);
+        captureFailed(CAPTURE_FAILURE_STATUS, errorMessage);
     }
 
     @Override

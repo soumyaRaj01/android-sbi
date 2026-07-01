@@ -153,7 +153,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                         break;
                     case "finger":
                         T5Capture capture = new T5Capture(this);
-                        capture.capture(this, this, null, deviceSubId);
+                        capture.capture(this, this, null, deviceSubId, bioSubType);
                         // The flow will continue in the callback methods below
                         break;
                     case "iris":

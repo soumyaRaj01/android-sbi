@@ -334,12 +334,12 @@ public class ClientActivity extends AppCompatActivity {
                 }
                 CaptureRequestDto captureRequestDto = new CaptureRequestDto();
                 captureRequestDto.env = DeviceConstants.ENVIRONMENT;
-                captureRequestDto.purpose = DeviceConstants.DeviceUsage.Registration.toString();
+                captureRequestDto.purpose = DeviceConstants.DeviceUsage.Authentication.getDeviceUsage();
                 captureRequestDto.specVersion = DeviceConstants.MDS_VERSION;
                 captureRequestDto.timeout = 10000;
                 captureRequestDto.captureTime = "2021-07-18T17:56:11Z";
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
-                captureRequestDto.transactionId = "1626630971975";
+                captureRequestDto.transactionId = "1234567890";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
                 bio.type = selectedDeviceType;
                 bio.count = "0";

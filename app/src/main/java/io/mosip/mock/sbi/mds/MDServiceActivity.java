@@ -303,7 +303,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     return;
                 }
             } else {
-                if (!validateBioCountAuth(bioType, count)) {
+                if (!validateBioCountAuth(bioType, count, mosipBioRequest.get(0))) {
                     generateCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
                     return;
                 }
@@ -323,12 +323,29 @@ public class MDServiceActivity extends AppCompatActivity {
         }
     }
 
-    private boolean validateBioCountAuth(DeviceConstants.BioType bioType, int bioCount) {
+    private boolean validateBioCountAuth(DeviceConstants.BioType bioType, int bioCount, CaptureRequestDeviceDetailDto request) {
         switch (bioType) {
             case Finger:
-                if (bioCount < 0 || bioCount > 10)
+                if (bioCount < 0 || bioCount > 10) {
                     return false;
-                break;
+                }
+                int deviceSubId;
+                try {
+                    deviceSubId = Integer.parseInt(request.deviceSubId);
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+                switch (deviceSubId) {
+                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
+                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT:
+                        return bioCount == 4;
+                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB:
+                        return bioCount == 2;
+                    case 0:
+                        return request.bioSubType != null && bioCount == request.bioSubType.length;
+                    default:
+                        return false;
+                }
             case Iris:
                 if (bioCount < 0 || bioCount > 2)
                     return false;

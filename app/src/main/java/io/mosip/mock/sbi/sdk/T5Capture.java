@@ -11,7 +11,10 @@ import io.mosip.mock.sbi.utility.DeviceConstants;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class T5Capture {
@@ -46,14 +49,7 @@ public class T5Capture {
         t5FingerCaptureController.setUsername("SBI");
         LinkedHashSet<SegmentationMode> segmentationModeSet = new LinkedHashSet<>();
 
-        if (bioSubType != null) {
-            for (String name : bioSubType) {
-                SegmentationMode mode = toSegmentationMode(name);
-                if (mode != null) {
-                    segmentationModeSet.add(mode);
-                }
-            }
-        } else if (deviceSubId != 0) {
+         if (deviceSubId != 0) {
             switch (deviceSubId) {
                 case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
                     segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
@@ -66,6 +62,18 @@ public class T5Capture {
                     break;
                 default:
                     break;
+            }
+        } else if (bioSubType != null) {
+            SegmentationMode dual = (bioSubType.length == 2) ? toDualSegmentationMode(bioSubType[0], bioSubType[1]) : null;
+            if (dual != null) {
+                segmentationModeSet.add(dual);
+            } else {
+                for (String name : bioSubType) {
+                    SegmentationMode mode = toSegmentationMode(name);
+                    if (mode != null) {
+                        segmentationModeSet.add(mode);
+                    }
+                }
             }
         }
 
@@ -152,6 +160,27 @@ public class T5Capture {
         t5FingerCaptureController.setReversefingerprints(settingsPrefManager.isGetFingerReverseEnabled());
 
         t5FingerCaptureController.captureFingers(context, listener);
+    }
+
+    private static SegmentationMode toDualSegmentationMode(String a, String b) {
+        Set<String> pair = new HashSet<>(Arrays.asList(a, b));
+        if (isPair(pair, DeviceConstants.BIO_NAME_LEFT_INDEX, DeviceConstants.BIO_NAME_LEFT_MIDDLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX_MIDDLE;
+        }
+        if (isPair(pair, DeviceConstants.BIO_NAME_RIGHT_INDEX, DeviceConstants.BIO_NAME_RIGHT_MIDDLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_RIGHT_INDEX_MIDDLE;
+        }
+        if (isPair(pair, DeviceConstants.BIO_NAME_LEFT_RING, DeviceConstants.BIO_NAME_LEFT_LITTLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_LEFT_RING_LITTLE;
+        }
+        if (isPair(pair, DeviceConstants.BIO_NAME_RIGHT_RING, DeviceConstants.BIO_NAME_RIGHT_LITTLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_RIGHT_RING_LITTLE;
+        }
+        return null;
+    }
+
+    private static boolean isPair(Set<String> pair, String x, String y) {
+        return pair.size() == 2 && pair.contains(x) && pair.contains(y);
     }
 
     /** Maps a MOSIP finger bio sub-type name to the T5 single-finger segmentation mode. */

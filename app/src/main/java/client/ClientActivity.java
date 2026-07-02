@@ -92,6 +92,7 @@ public class ClientActivity extends AppCompatActivity {
 
     static String appID = null;
     String serialNo = null;
+    String deviceIdValue = null;   // deviceId received from Info, echoed back in the capture request
     private String responseData = null;
     private String selectedDeviceType = MODALITY;
     private final List<DiscoverDto> discoveredDevices = new ArrayList<>();
@@ -344,7 +345,8 @@ public class ClientActivity extends AppCompatActivity {
                 bio.count = "0";
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
-                bio.deviceId = serialNo;
+                // Echo the deviceId received from Info so it matches discover/info (MOSIP requirement).
+                bio.deviceId = (deviceIdValue != null) ? deviceIdValue : serialNo;
                 bio.deviceSubId = "0";
                 bio.previousHash = "";
 
@@ -523,7 +525,8 @@ public class ClientActivity extends AppCompatActivity {
         deviceTypeSpinner.setEnabled(true);
         deviceTypeRow.setVisibility(View.VISIBLE);
         btnInfo.setEnabled(true);
-        btnCapture.setEnabled(true);
+        // Capture stays disabled until an Info request reports the device as Ready.
+        btnCapture.setEnabled(false);
 
         updateSelectedDevice(devices.get(0));
         showResponse("Discover response :", objectMapper.writeValueAsString(devices));
@@ -554,6 +557,8 @@ public class ClientActivity extends AppCompatActivity {
         if (device.deviceStatus != null) {
             deviceStatus.setText(device.deviceStatus);
         }
+        // Selecting a (different) device requires a fresh Info before capture is allowed.
+        btnCapture.setEnabled(false);
         String strDeviceId = digitalIDObj.optString("serialNo", "");
         if (!strDeviceId.isEmpty()) {
             deviceIdRow.setVisibility(View.VISIBLE);
@@ -672,9 +677,15 @@ public class ClientActivity extends AppCompatActivity {
                                     deviceIdRow.setVisibility(View.VISIBLE);
                                     deviceId.setText(serialNo);
                                 }
-                                if (infoObject.has("deviceStatus")) {
-                                    deviceStatus.setText(infoObject.getString("deviceStatus"));
+                                if (infoObject.has("deviceId")) {
+                                    deviceIdValue = infoObject.getString("deviceId");
                                 }
+                                String status = infoObject.has("deviceStatus")
+                                        ? infoObject.getString("deviceStatus") : "";
+                                deviceStatus.setText(status);
+                                // Capture is only allowed when the device reports Ready.
+                                btnCapture.setEnabled(
+                                        DeviceConstants.ServiceStatus.READY.getStatus().equalsIgnoreCase(status));
                                 showResponse("Info response :", list.get(0).toString());
                                 responseData = list.get(0).toString();
                             } else {
@@ -682,6 +693,7 @@ public class ClientActivity extends AppCompatActivity {
                                 deviceId.setText("");
                                 deviceIdRow.setVisibility(View.GONE);
                                 deviceStatus.setText("Not Ready");
+                                btnCapture.setEnabled(false);
                                 responseData = list.get(0).toString();
                             }
                         } else {

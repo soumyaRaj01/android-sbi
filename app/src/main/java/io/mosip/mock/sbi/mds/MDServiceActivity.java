@@ -43,6 +43,7 @@ import io.mosip.mock.sbi.dto.DiscoverDto;
 import io.mosip.mock.sbi.dto.Error;
 import io.mosip.mock.sbi.faceCaptureApi.CaptureResult;
 import io.mosip.mock.sbi.scanner.ResponseGenerator.ResponseGenHelper;
+import io.mosip.mock.sbi.sdk.T5DeviceStatus;
 import io.mosip.mock.sbi.secureLib.DeviceKeystore;
 import io.mosip.mock.sbi.utility.CommonDeviceAPI;
 import io.mosip.mock.sbi.utility.DeviceConstants;
@@ -141,8 +142,9 @@ public class MDServiceActivity extends AppCompatActivity {
                                 responseBody = discoverDevice(currentFaceStatus, szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
                                 break;
                             case "Finger":
-                                responseBody = discoverDevice(currentFingerStatus, szTs, "io.mosip.t5mock.sbi.finger",
-                                        DeviceConstants.BioType.Finger);
+                                responseBody = discoverDevice(
+                                        T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus),
+                                        szTs, "io.mosip.t5mock.sbi.finger", DeviceConstants.BioType.Finger);
                                 break;
                             case "Iris":
                                 responseBody = discoverDevice(currentIrisStatus, szTs, "io.mosip.t5mock.sbi.iris",
@@ -151,7 +153,9 @@ public class MDServiceActivity extends AppCompatActivity {
                             case "Biometric Device":
                                 List<DiscoverDto> deviceList = new ArrayList<>();
                                 List<DiscoverDto> faceDevice = discoverDevice(currentFaceStatus, szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
-                                List<DiscoverDto> fingerDevice = discoverDevice(currentFingerStatus, szTs, "io.mosip.t5mock.sbi.finger", DeviceConstants.BioType.Finger);
+                                List<DiscoverDto> fingerDevice = discoverDevice(
+                                        T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus),
+                                        szTs, "io.mosip.t5mock.sbi.finger", DeviceConstants.BioType.Finger);
 //                                List<DiscoverDto> irisDevice = discoverDevice(currentIrisStatus, szTs, "io.mosip.t5mock.sbi.iris", DeviceConstants.BioType.Iris);
                                 deviceList.addAll(faceDevice);
                                 deviceList.addAll(fingerDevice);
@@ -188,7 +192,9 @@ public class MDServiceActivity extends AppCompatActivity {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "io.mosip.t5mock.sbi.finger" + ".info";
-                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFingerStatus, szTs, requestType, DeviceConstants.BioType.Finger);
+                    DeviceConstants.ServiceStatus fingerStatus =
+                            T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(fingerStatus, szTs, requestType, DeviceConstants.BioType.Finger);
 
                     generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
@@ -478,13 +484,15 @@ public class MDServiceActivity extends AppCompatActivity {
     }
 
     private List<DiscoverDto> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
-        return responseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
+        String deviceId = bioType == DeviceConstants.BioType.Finger ? T5DeviceStatus.getFingerDeviceId() : null;
+        return responseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType, deviceId);
     }
 
     public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType,
                                                         DeviceConstants.BioType bioType) {
         DeviceKeystore keystore = new DeviceKeystore(this);
-        return responseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType, keystore);
+        String deviceId = bioType == DeviceConstants.BioType.Finger ? T5DeviceStatus.getFingerDeviceId() : null;
+        return responseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType, keystore, deviceId);
     }
 
     @Override

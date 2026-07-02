@@ -92,6 +92,7 @@ public class ClientActivity extends AppCompatActivity {
 
     static String appID = null;
     String serialNo = null;
+    String deviceIdValue = null;   // deviceId received from Info, echoed back in the capture request
     private String responseData = null;
     private String selectedDeviceType = MODALITY;
     private final List<DiscoverDto> discoveredDevices = new ArrayList<>();
@@ -165,7 +166,7 @@ public class ClientActivity extends AppCompatActivity {
         if (btnRCapture != null) {
             btnRCapture.setOnClickListener(view -> {
                 textBox.setText("");
-                capture(".rCapture", REQUEST_REG_CAPTURE, null);
+                capture(".rCapture", REQUEST_REG_CAPTURE, (FingerInput) null);
             });
         }
 
@@ -178,7 +179,7 @@ public class ClientActivity extends AppCompatActivity {
         btnCapture.setOnClickListener(view -> {
             textBox.setText("");
             if ("Finger".equalsIgnoreCase(selectedDeviceType)) {
-                showFingerSlapDialog();
+                showFingerCaptureTypeDialog();
             } else {
                 capture(".Capture", REQUEST_AUTH_CAPTURE, null);
             }
@@ -317,7 +318,7 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
-    private void capture(String action, int requestCode, FingerSlab slab) {
+    private void capture(String action, int requestCode, FingerInput input) {
         try {
             Intent intent = new Intent();
             intent.setAction(appID + action);
@@ -333,25 +334,29 @@ public class ClientActivity extends AppCompatActivity {
                 }
                 CaptureRequestDto captureRequestDto = new CaptureRequestDto();
                 captureRequestDto.env = DeviceConstants.ENVIRONMENT;
-                captureRequestDto.purpose = DeviceConstants.DeviceUsage.Registration.toString();
+                captureRequestDto.purpose = DeviceConstants.DeviceUsage.Authentication.getDeviceUsage();
                 captureRequestDto.specVersion = DeviceConstants.MDS_VERSION;
                 captureRequestDto.timeout = 10000;
                 captureRequestDto.captureTime = "2021-07-18T17:56:11Z";
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
-                captureRequestDto.transactionId = "1626630971975";
+                captureRequestDto.transactionId = "1234567890";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
                 bio.type = selectedDeviceType;
                 bio.count = "0";
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
-                bio.deviceId = serialNo;
+                // Echo the deviceId received from Info so it matches discover/info (MOSIP requirement).
+                bio.deviceId = (deviceIdValue != null) ? deviceIdValue : serialNo;
                 bio.deviceSubId = "0";
                 bio.previousHash = "";
-                // Finger slap chosen in the UI sets the slap fields; the device segments by deviceSubId.
-                if (slab != null) {
-                    bio.deviceSubId = String.valueOf(slab.deviceSubId);
-                    bio.count = String.valueOf(slab.count);
+
+                if (input != null) {
+                    bio.bioSubType = input.bioSubType;
+                    bio.deviceSubId = input.deviceSubId;
+                    bio.count = input.count;
+                    bio.exception = new String[0];
                 }
+
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
                 captureRequestDto.bio = mosipBioRequest;
@@ -376,7 +381,54 @@ public class ClientActivity extends AppCompatActivity {
     }
 
 
-    /** Asks the user which finger slap to capture, then fires the capture with that slap. */
+    /** All ten fingers offered for selection, in ANSI position order. */
+    private static final String[] FINGER_SUB_TYPES = {
+            DeviceConstants.BIO_NAME_RIGHT_THUMB, DeviceConstants.BIO_NAME_RIGHT_INDEX,
+            DeviceConstants.BIO_NAME_RIGHT_MIDDLE, DeviceConstants.BIO_NAME_RIGHT_RING,
+            DeviceConstants.BIO_NAME_RIGHT_LITTLE, DeviceConstants.BIO_NAME_LEFT_THUMB,
+            DeviceConstants.BIO_NAME_LEFT_INDEX, DeviceConstants.BIO_NAME_LEFT_MIDDLE,
+            DeviceConstants.BIO_NAME_LEFT_RING, DeviceConstants.BIO_NAME_LEFT_LITTLE
+    };
+
+    /** First step for a finger capture: ask whether to capture single fingers or a slap. */
+    private void showFingerCaptureTypeDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Capture Type")
+                .setItems(new String[]{"Single", "Slap"}, (dialog, which) -> {
+                    if (which == 0) {
+                        showFingerSelectionDialog();
+                    } else {
+                        showFingerSlapDialog();
+                    }
+                })
+                .show();
+    }
+
+    /** Single capture: pick one or more individual fingers, then fire the capture with that set. */
+    private void showFingerSelectionDialog() {
+        final boolean[] checked = new boolean[FINGER_SUB_TYPES.length];
+        new AlertDialog.Builder(this)
+                .setTitle("Select Finger(s)")
+                .setMultiChoiceItems(FINGER_SUB_TYPES, checked,
+                        (dialog, which, isChecked) -> checked[which] = isChecked)
+                .setPositiveButton("Capture", (dialog, which) -> {
+                    List<String> selected = new ArrayList<>();
+                    for (int i = 0; i < FINGER_SUB_TYPES.length; i++) {
+                        if (checked[i]) {
+                            selected.add(FINGER_SUB_TYPES[i]);
+                        }
+                    }
+                    if (selected.isEmpty()) {
+                        Toast.makeText(this, "Select at least one finger", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    capture(".Capture", REQUEST_AUTH_CAPTURE, FingerInput.single(selected.toArray(new String[0])));
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /** Slap capture: pick a slap; deviceSubId drives the slap segmentation on the device. */
     private void showFingerSlapDialog() {
         FingerSlab[] slabs = FingerSlab.values();
         String[] labels = new String[slabs.length];
@@ -386,8 +438,30 @@ public class ClientActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Select Slap")
                 .setItems(labels, (dialog, which) ->
-                        capture(".Capture", REQUEST_AUTH_CAPTURE, slabs[which]))
+                        capture(".Capture", REQUEST_AUTH_CAPTURE,
+                                FingerInput.slap(slabs[which].deviceSubId, slabs[which].count)))
                 .show();
+    }
+
+    /** Resolved finger-capture parameters for a request: single (bioSubType) or slap (deviceSubId). */
+    private static final class FingerInput {
+        final String[] bioSubType;   // the specific fingers for single capture; null for a slap
+        final String deviceSubId;    // "0" for single; "1"/"2"/"3" for a slap
+        final String count;
+
+        private FingerInput(String[] bioSubType, String deviceSubId, String count) {
+            this.bioSubType = bioSubType;
+            this.deviceSubId = deviceSubId;
+            this.count = count;
+        }
+
+        static FingerInput single(String[] fingers) {
+            return new FingerInput(fingers, "0", String.valueOf(fingers.length));
+        }
+
+        static FingerInput slap(int deviceSubId, int count) {
+            return new FingerInput(null, String.valueOf(deviceSubId), String.valueOf(count));
+        }
     }
 
     /** Slaps offered in the slap dialog, with the deviceSubId and finger count each maps to. */
@@ -451,7 +525,8 @@ public class ClientActivity extends AppCompatActivity {
         deviceTypeSpinner.setEnabled(true);
         deviceTypeRow.setVisibility(View.VISIBLE);
         btnInfo.setEnabled(true);
-        btnCapture.setEnabled(true);
+        // Capture stays disabled until an Info request reports the device as Ready.
+        btnCapture.setEnabled(false);
 
         updateSelectedDevice(devices.get(0));
         showResponse("Discover response :", objectMapper.writeValueAsString(devices));
@@ -482,7 +557,9 @@ public class ClientActivity extends AppCompatActivity {
         if (device.deviceStatus != null) {
             deviceStatus.setText(device.deviceStatus);
         }
-        String strDeviceId = digitalIDObj.optString("serialNo", "");
+        // Selecting a (different) device requires a fresh Info before capture is allowed.
+        btnCapture.setEnabled(false);
+        String strDeviceId = device.deviceId;
         if (!strDeviceId.isEmpty()) {
             deviceIdRow.setVisibility(View.VISIBLE);
             deviceId.setText(strDeviceId);
@@ -600,9 +677,15 @@ public class ClientActivity extends AppCompatActivity {
                                     deviceIdRow.setVisibility(View.VISIBLE);
                                     deviceId.setText(serialNo);
                                 }
-                                if (infoObject.has("deviceStatus")) {
-                                    deviceStatus.setText(infoObject.getString("deviceStatus"));
+                                if (infoObject.has("deviceId")) {
+                                    deviceIdValue = infoObject.getString("deviceId");
                                 }
+                                String status = infoObject.has("deviceStatus")
+                                        ? infoObject.getString("deviceStatus") : "";
+                                deviceStatus.setText(status);
+                                // Capture is only allowed when the device reports Ready.
+                                btnCapture.setEnabled(
+                                        DeviceConstants.ServiceStatus.READY.getStatus().equalsIgnoreCase(status));
                                 showResponse("Info response :", list.get(0).toString());
                                 responseData = list.get(0).toString();
                             } else {
@@ -610,6 +693,7 @@ public class ClientActivity extends AppCompatActivity {
                                 deviceId.setText("");
                                 deviceIdRow.setVisibility(View.GONE);
                                 deviceStatus.setText("Not Ready");
+                                btnCapture.setEnabled(false);
                                 responseData = list.get(0).toString();
                             }
                         } else {

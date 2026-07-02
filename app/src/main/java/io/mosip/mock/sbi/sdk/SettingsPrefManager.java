@@ -26,7 +26,7 @@ public class SettingsPrefManager {
     // Default values
 //    private static final boolean DEFAULT_TRUE = true;
 //    private static final boolean DEFAULT_FALSE = true;
-    private static final int DEFAULT_RADIO_ID = 2;
+    private static final int DEFAULT_RADIO_ID = 1;
     private static final float DEFAULT_THRESHOLD = 0.9f;
 
     private SharedPreferences sharedPref;

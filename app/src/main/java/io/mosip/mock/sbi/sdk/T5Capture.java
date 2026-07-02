@@ -11,7 +11,10 @@ import io.mosip.mock.sbi.utility.DeviceConstants;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class T5Capture {
@@ -28,7 +31,7 @@ public class T5Capture {
         m_lightSensorHelper.start();
     }
 
-    public void capture(Context context, T5FingerCapturedListener listener, ArrayList<Integer> missingfingerId, int deviceSubId) {
+    public void capture(Context context, T5FingerCapturedListener listener, ArrayList<Integer> missingfingerId, int deviceSubId, String[] bioSubType) {
         T5FingerCaptureController t5FingerCaptureController = T5FingerCaptureController.getInstance();
         settingsPrefManager = new SettingsPrefManager(context);
         t5FingerCaptureController.setsavesdklogs(true);
@@ -46,20 +49,41 @@ public class T5Capture {
         t5FingerCaptureController.setUsername("SBI");
         LinkedHashSet<SegmentationMode> segmentationModeSet = new LinkedHashSet<>();
 
-        switch (deviceSubId) {
-            case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB: // both thumbs 3
-                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
-                break;
-            case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT: // right slap 2
-                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
-                break;
-            case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT: // left slap 1
-            default:
-                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
-                break;
+         if (deviceSubId != 0) {
+            switch (deviceSubId) {
+                case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
+                    segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+                    break;
+                case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT:
+                    segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
+                    break;
+                case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB:
+                    segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
+                    break;
+                default:
+                    break;
+            }
+        } else if (bioSubType != null) {
+            SegmentationMode dual = (bioSubType.length == 2) ? toDualSegmentationMode(bioSubType[0], bioSubType[1]) : null;
+            if (dual != null) {
+                segmentationModeSet.add(dual);
+            } else {
+                for (String name : bioSubType) {
+                    SegmentationMode mode = toSegmentationMode(name);
+                    if (mode != null) {
+                        segmentationModeSet.add(mode);
+                    }
+                }
+            }
+        }
+
+        if (segmentationModeSet.isEmpty()) {
+            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
         }
 
         t5FingerCaptureController.setSegmentationModes(segmentationModeSet);
+
+        t5FingerCaptureController.setNfiq1QualityThreshold(3);
 
         CaptureMode captureMode = CaptureMode.CAPTURE_MODE_SELF;
 
@@ -136,6 +160,47 @@ public class T5Capture {
         t5FingerCaptureController.setReversefingerprints(settingsPrefManager.isGetFingerReverseEnabled());
 
         t5FingerCaptureController.captureFingers(context, listener);
+    }
+
+    private static SegmentationMode toDualSegmentationMode(String a, String b) {
+        Set<String> pair = new HashSet<>(Arrays.asList(a, b));
+        if (isPair(pair, DeviceConstants.BIO_NAME_LEFT_INDEX, DeviceConstants.BIO_NAME_LEFT_MIDDLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX_MIDDLE;
+        }
+        if (isPair(pair, DeviceConstants.BIO_NAME_RIGHT_INDEX, DeviceConstants.BIO_NAME_RIGHT_MIDDLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_RIGHT_INDEX_MIDDLE;
+        }
+        if (isPair(pair, DeviceConstants.BIO_NAME_LEFT_RING, DeviceConstants.BIO_NAME_LEFT_LITTLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_LEFT_RING_LITTLE;
+        }
+        if (isPair(pair, DeviceConstants.BIO_NAME_RIGHT_RING, DeviceConstants.BIO_NAME_RIGHT_LITTLE)) {
+            return SegmentationMode.SEGMENTATION_MODE_RIGHT_RING_LITTLE;
+        }
+        return null;
+    }
+
+    private static boolean isPair(Set<String> pair, String x, String y) {
+        return pair.size() == 2 && pair.contains(x) && pair.contains(y);
+    }
+
+    /** Maps a MOSIP finger bio sub-type name to the T5 single-finger segmentation mode. */
+    private static SegmentationMode toSegmentationMode(String bioName) {
+        if (bioName == null) {
+            return null;
+        }
+        switch (bioName) {
+            case DeviceConstants.BIO_NAME_RIGHT_THUMB:  return SegmentationMode.SEGMENTATION_MODE_RIGHT_THUMB;
+            case DeviceConstants.BIO_NAME_RIGHT_INDEX:  return SegmentationMode.SEGMENTATION_MODE_RIGHT_INDEX;
+            case DeviceConstants.BIO_NAME_RIGHT_MIDDLE: return SegmentationMode.SEGMENTATION_MODE_RIGHT_MIDDLE;
+            case DeviceConstants.BIO_NAME_RIGHT_RING:   return SegmentationMode.SEGMENTATION_MODE_RIGHT_RING;
+            case DeviceConstants.BIO_NAME_RIGHT_LITTLE: return SegmentationMode.SEGMENTATION_MODE_RIGHT_LITTLE;
+            case DeviceConstants.BIO_NAME_LEFT_THUMB:   return SegmentationMode.SEGMENTATION_MODE_LEFT_THUMB;
+            case DeviceConstants.BIO_NAME_LEFT_INDEX:   return SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX;
+            case DeviceConstants.BIO_NAME_LEFT_MIDDLE:  return SegmentationMode.SEGMENTATION_MODE_LEFT_MIDDLE;
+            case DeviceConstants.BIO_NAME_LEFT_RING:    return SegmentationMode.SEGMENTATION_MODE_LEFT_RING;
+            case DeviceConstants.BIO_NAME_LEFT_LITTLE:  return SegmentationMode.SEGMENTATION_MODE_LEFT_LITTLE;
+            default: return null;
+        }
     }
 
     private @NonNull ImageConfiguration getImageConfiguration() {

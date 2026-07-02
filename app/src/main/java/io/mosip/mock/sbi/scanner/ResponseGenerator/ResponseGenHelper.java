@@ -51,7 +51,8 @@ public class ResponseGenHelper {
 
     public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus,
                                                         String szTimeStamp, String requestType,
-                                                        DeviceConstants.BioType bioType, DeviceKeystore keystore) {
+                                                        DeviceConstants.BioType bioType, DeviceKeystore keystore,
+                                                        String deviceId) {
         List<String> listOfModalities = Collections.singletonList("FAC");
 
         List<DeviceInfoResponse> infoList = new ArrayList<>();
@@ -75,7 +76,7 @@ public class ResponseGenHelper {
             String purpose = currentStatus != NOT_REGISTERED ? deviceUtil.DEVICE_USAGE.getDeviceUsage() : "";
 
             listOfModalities.forEach(value -> {
-                byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, purpose);
+                byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, purpose, deviceId);
                 String encodedDeviceInfo = keystore.getJwt(deviceInfoData, false);
                 infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
             });
@@ -89,13 +90,14 @@ public class ResponseGenHelper {
 
     public List<DiscoverDto> getDeviceDiscovery(
             DeviceConstants.ServiceStatus currentStatus,
-            String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
+            String szTimeStamp, String requestType, DeviceConstants.BioType bioType, String deviceId) {
         List<DiscoverDto> list = new ArrayList<>();
         try {
             DiscoverDto discoverDto = new DiscoverDto();
             CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
             String serialNumber = devCommonDeviceAPI.getSerialNumber();
-            discoverDto.deviceId = serialNumber;
+            // deviceId is the internal device id (from the SDK when available); deviceCode stays serialNo.
+            discoverDto.deviceId = (deviceId != null && !deviceId.isEmpty()) ? deviceId : serialNumber;
             discoverDto.deviceStatus = currentStatus.getStatus();
             discoverDto.certification = deviceUtil.CERTIFICATION_LEVEL;
             discoverDto.serviceVersion = DeviceConstants.MDS_VERSION;
@@ -150,7 +152,7 @@ public class ResponseGenHelper {
             DeviceKeystore deviceKeystore,
             DeviceConstants.ServiceStatus currentStatus,
             String szTimeStamp, String requestType, DeviceConstants.BioType bioType,
-            String deviceUsage) {
+            String deviceUsage, String deviceId) {
         byte[] deviceInfoData = null;
         try {
             byte[] fwVersion;
@@ -162,7 +164,8 @@ public class ResponseGenHelper {
             info.callbackId = requestType.replace(".Info", "");
             info.certification = deviceUtil.CERTIFICATION_LEVEL;
             info.deviceCode = serialNumber;
-            info.deviceId = serialNumber;
+            // deviceId is the internal device id (from the SDK when available); deviceCode stays serialNo.
+            info.deviceId = (deviceId != null && !deviceId.isEmpty()) ? deviceId : serialNumber;
             info.deviceStatus = currentStatus.getStatus();
             info.deviceSubId = new String[]{"0"};
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);

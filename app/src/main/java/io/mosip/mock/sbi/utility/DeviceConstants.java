@@ -21,8 +21,8 @@ public class DeviceConstants {
     public static final String PROVIDER_NAME = "MOSIP";
     public static final String PROVIDER_ID = "MOSIP_DP";
     public static final String REG_SERVER_VERSION = "0.9.5";
-    public static String ENVIRONMENT = "Production";
-    public static String DOMAIN_URI = "ANDROID";
+    public static String ENVIRONMENT = "Staging";
+    public static String DOMAIN_URI = "https://api-internal.niraqa1.idencode.link";
     public static final int DEFAULT_TIME_DELAY = 1000;
     public static final String DEFAULT_MOSIP_AUTH_APPID = "regproc";
     public static final String DEFAULT_MOSIP_AUTH_CLIENTID = "mosip-regproc-client";

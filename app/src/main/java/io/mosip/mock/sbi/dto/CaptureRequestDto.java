@@ -12,7 +12,6 @@ public class CaptureRequestDto {
     public String purpose;
     public String specVersion;
     public int timeout;
-    @JsonIgnore
     public String domainUri;
     @JsonIgnore
     public String captureTime;

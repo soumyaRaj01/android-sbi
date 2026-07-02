@@ -559,7 +559,7 @@ public class ClientActivity extends AppCompatActivity {
         }
         // Selecting a (different) device requires a fresh Info before capture is allowed.
         btnCapture.setEnabled(false);
-        String strDeviceId = digitalIDObj.optString("serialNo", "");
+        String strDeviceId = device.deviceId;
         if (!strDeviceId.isEmpty()) {
             deviceIdRow.setVisibility(View.VISIBLE);
             deviceId.setText(strDeviceId);

@@ -692,7 +692,7 @@ public class ClientActivity extends AppCompatActivity {
                                 showResponse("Info response", list.get(0).toString());
                                 deviceId.setText("");
                                 deviceIdRow.setVisibility(View.GONE);
-                                deviceStatus.setText("Not Ready");
+                                deviceStatus.setText(errorObject.errorInfo);
                                 btnCapture.setEnabled(false);
                                 responseData = list.get(0).toString();
                             }

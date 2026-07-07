@@ -264,4 +264,9 @@ public class DeviceKeystore {
     public static byte[] getCertificateThumbprint(Certificate cert) throws CertificateEncodingException {
         return DigestUtils.sha256(cert.getEncoded());
     }
+
+    public boolean isDeviceKeyAvailable() {
+        File file = new File(context.getFilesDir(), ClientConstants.DEVICE_P12_FILE_NAME);
+        return file.exists();
+    }
 }

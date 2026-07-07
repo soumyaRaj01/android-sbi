@@ -3,6 +3,7 @@ package io.mosip.mock.sbi.scanner.ResponseGenerator;
 import static io.mosip.mock.sbi.utility.DeviceConstants.CERTIFICATION_L1;
 import static io.mosip.mock.sbi.utility.DeviceConstants.ServiceStatus.NOT_REGISTERED;
 
+import android.os.Build;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bouncycastle.util.Strings;
@@ -57,6 +58,10 @@ public class ResponseGenHelper {
 
         List<DeviceInfoResponse> infoList = new ArrayList<>();
         try {
+            if(!keystore.isDeviceKeyAvailable()){
+                currentStatus = DeviceConstants.ServiceStatus.NOT_REGISTERED;
+            }
+
             Error error;
             switch (currentStatus) {
                 case NOT_READY:
@@ -75,9 +80,17 @@ public class ResponseGenHelper {
             //Purpose for Not Registered device should be empty
             String purpose = currentStatus != NOT_REGISTERED ? deviceUtil.DEVICE_USAGE.getDeviceUsage() : "";
 
+            DeviceConstants.ServiceStatus finalCurrentStatus = currentStatus;
             listOfModalities.forEach(value -> {
-                byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, purpose, deviceId);
-                String encodedDeviceInfo = keystore.getJwt(deviceInfoData, false);
+                byte[] deviceInfoData = getDeviceInfo(keystore, finalCurrentStatus, szTimeStamp, requestType, bioType, purpose, deviceId);
+
+                String encodedDeviceInfo;
+                if(finalCurrentStatus == NOT_REGISTERED){
+                    encodedDeviceInfo = CryptoUtility.encodeToURLSafeBase64(deviceInfoData);
+                } else{
+                    encodedDeviceInfo = keystore.getJwt(deviceInfoData, false);
+                }
+
                 infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
             });
         } catch (Exception ex) {
@@ -169,7 +182,13 @@ public class ResponseGenHelper {
             info.deviceStatus = currentStatus.getStatus();
             info.deviceSubId = new String[]{"0"};
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
-            info.digitalId = deviceKeystore.getJwt(payLoad.getBytes(), deviceUtil.CERTIFICATION_LEVEL.equals(CERTIFICATION_L1));
+
+            if(currentStatus == NOT_REGISTERED){
+                info.digitalId = CryptoUtility.getBase64encodeString(payLoad);
+            } else{
+                info.digitalId = deviceKeystore.getJwt(payLoad.getBytes(), deviceUtil.CERTIFICATION_LEVEL.equals(CERTIFICATION_L1));
+            }
+
             info.specVersion = new String[]{DeviceConstants.REG_SERVER_VERSION};
             info.serviceVersion = DeviceConstants.MDS_VERSION;
             info.purpose = deviceUsage;
@@ -193,16 +212,21 @@ public class ResponseGenHelper {
 
         try {
             jsonobject.put("serialNo", serialNumber);
+
+            String make = Build.BRAND;
+            String model = Build.MODEL;
+//            String manufacturer = Build.MANUFACTURER;
+
             switch (bioType) {
                 case Face:
-                    jsonobject.put("make", DeviceConstants.DEVICE_MAKE_FACE);
-                    jsonobject.put("model", DeviceConstants.DEVICE_MODEL_FACE);
+                    jsonobject.put("make", make);
+                    jsonobject.put("model", model);
                     jsonobject.put("type", DeviceConstants.BioType.Face.getBioType());
                     jsonobject.put("deviceSubType", deviceUtil.FACE_DEVICE_SUBTYPE);
                     break;
                 case Finger:
-                    jsonobject.put("make", DeviceConstants.DEVICE_MAKE_FINGER);
-                    jsonobject.put("model", DeviceConstants.DEVICE_MODEL_FINGER);
+                    jsonobject.put("make", make);
+                    jsonobject.put("model", model);
                     jsonobject.put("type", DeviceConstants.BioType.Finger.getBioType());
                     jsonobject.put("deviceSubType", deviceUtil.FINGER_DEVICE_SUBTYPE);
                     break;

@@ -18,8 +18,8 @@ public class DeviceConstants {
     public static final String DEVICE_MAKE_FINGER = "Android";
     public static final String DEVICE_MODEL_IRIS = "AndroidIrisScanner";
     public static final String DEVICE_MAKE_IRIS = "Android";
-    public static final String PROVIDER_NAME = "MOSIP";
-    public static final String PROVIDER_ID = "MOSIP_DP";
+    public static final String PROVIDER_NAME = "Tech5";
+    public static final String PROVIDER_ID = "Tech5_DP";
     public static final String REG_SERVER_VERSION = "0.9.5";
     public static String ENVIRONMENT = "Staging";
     public static String DOMAIN_URI = "https://api-internal.niraqa1.idencode.link";

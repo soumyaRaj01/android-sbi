@@ -153,7 +153,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                         break;
                     case "finger":
                         T5Capture capture = new T5Capture(this);
-                        capture.capture(this, this, null, deviceSubId, bioSubType);
+                        capture.capture(this, this, deviceSubId, bioSubType);
                         // The flow will continue in the callback methods below
                         break;
                     case "iris":
@@ -176,9 +176,24 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
     @Override
     public void onSuccess(FingerCaptureResult result) {
+        handleFingerResult(result, false);
+    }
+
+    @Override
+    public void onFailure(String errorMessage) {
+        captureFailed(CAPTURE_FAILURE_STATUS, errorMessage);
+    }
+
+    @Override
+    public void onTimedout(FingerCaptureResult result) {
+        handleFingerResult(result, true);
+    }
+
+    private void handleFingerResult(FingerCaptureResult result, boolean timedOut) {
         try {
             if (result == null || result.fingers == null || result.fingers.isEmpty()) {
-                captureFailed(CAPTURE_FAILURE_STATUS, "No finger data captured");
+                captureFailed(timedOut ? CaptureResult.CAPTURE_TIMEOUT : CAPTURE_FAILURE_STATUS,
+                        timedOut ? "Capture timeout" : "No finger data captured");
                 return;
             }
             Map<String, Uri> uris = bioDevice.generateFingerIsoUris(result.fingers);
@@ -190,16 +205,6 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         } catch (Exception e) {
             captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
         }
-    }
-
-    @Override
-    public void onFailure(String errorMessage) {
-        captureFailed(CAPTURE_FAILURE_STATUS, errorMessage);
-    }
-
-    @Override
-    public void onTimedout() {
-        captureFailed(CAPTURE_FAILURE_STATUS, "Capture timeout");
     }
 
     @Override

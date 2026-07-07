@@ -22,6 +22,15 @@ public class T5Capture {
     SettingsPrefManager settingsPrefManager;
 
     private static final String[] APP_PERMISSIONS = {Manifest.permission.CAMERA};
+
+    private static final SegmentationMode[] UNKNOWN_FINGER_ORDER = {
+            SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX,  SegmentationMode.SEGMENTATION_MODE_LEFT_MIDDLE,
+            SegmentationMode.SEGMENTATION_MODE_LEFT_RING,   SegmentationMode.SEGMENTATION_MODE_LEFT_LITTLE,
+            SegmentationMode.SEGMENTATION_MODE_RIGHT_INDEX, SegmentationMode.SEGMENTATION_MODE_RIGHT_MIDDLE,
+            SegmentationMode.SEGMENTATION_MODE_RIGHT_RING,  SegmentationMode.SEGMENTATION_MODE_RIGHT_LITTLE,
+            SegmentationMode.SEGMENTATION_MODE_LEFT_THUMB,  SegmentationMode.SEGMENTATION_MODE_RIGHT_THUMB
+    };
+
     private static String m_rootDirectory;
     private static ExecutorService m_service = null;
     private LightSensorHelper m_lightSensorHelper = null;
@@ -31,7 +40,7 @@ public class T5Capture {
         m_lightSensorHelper.start();
     }
 
-    public void capture(Context context, T5FingerCapturedListener listener, ArrayList<Integer> missingfingerId, int deviceSubId, String[] bioSubType) {
+    public void capture(Context context, T5FingerCapturedListener listener, int deviceSubId, String[] bioSubType) {
         T5FingerCaptureController t5FingerCaptureController = T5FingerCaptureController.getInstance();
         settingsPrefManager = new SettingsPrefManager(context);
         t5FingerCaptureController.setsavesdklogs(true);
@@ -48,6 +57,7 @@ public class T5Capture {
         t5FingerCaptureController.setDetectorThreshold(0.9f);
         t5FingerCaptureController.setUsername("SBI");
         LinkedHashSet<SegmentationMode> segmentationModeSet = new LinkedHashSet<>();
+        ArrayList<Integer> missingFingers = new ArrayList<>();
 
          if (deviceSubId != 0) {
             switch (deviceSubId) {
@@ -78,7 +88,16 @@ public class T5Capture {
         }
 
         if (segmentationModeSet.isEmpty()) {
-            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+            boolean isUnknown = bioSubType != null && bioSubType.length > 0
+                    && DeviceConstants.BIO_NAME_UNKNOWN.equals(bioSubType[0]);
+            if (isUnknown) {
+                for (int i = 0; i < bioSubType.length && i < UNKNOWN_FINGER_ORDER.length; i++) {
+                    segmentationModeSet.add(UNKNOWN_FINGER_ORDER[i]);
+                }
+            }
+            if (segmentationModeSet.isEmpty()) {
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+            }
         }
 
         t5FingerCaptureController.setSegmentationModes(segmentationModeSet);
@@ -101,8 +120,8 @@ public class T5Capture {
         t5FingerCaptureController.setTitle("Finger Capture");
         t5FingerCaptureController.setShowBackButton(false);
 
-        if (missingfingerId != null) {
-            t5FingerCaptureController.setMissingFingers(missingfingerId);
+        if (!missingFingers.isEmpty()) {
+            t5FingerCaptureController.setMissingFingers(missingFingers);
         }
         int getspeed = settingsPrefManager.getCaptureSpeedId();
 

@@ -17,6 +17,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TableRow;
@@ -74,6 +75,9 @@ public class ClientActivity extends AppCompatActivity {
     private static final int REQUEST_REG_CAPTURE = 3;
     private static final int REQUEST_AUTH_CAPTURE = 4;
 
+    private static final int DEFAULT_TIMEOUT_SECONDS = 60;
+    private static final int DEFAULT_SCORE = 30;
+
 
     private static final int HANDLER_DISPLAY_TOAST = 0;
     private static final int HANDLER_DISPLAY_CAPTURE_RESPONSE = 1;
@@ -87,6 +91,7 @@ public class ClientActivity extends AppCompatActivity {
     TextView devicePurposeTextView;
     ImageButton btnShareResponse;
     Spinner deviceTypeSpinner;
+    EditText timeoutInput, scoreInput;
     TableRow deviceIdRow, deviceTypeRow;
     ConstraintLayout emptyScreen, responseScreen, progressBarScreen;
 
@@ -128,6 +133,8 @@ public class ClientActivity extends AppCompatActivity {
         responseScreen = findViewById(R.id.response_layout);
         progressBarScreen = findViewById(R.id.client_progress_layout);
         btnShareResponse = findViewById(R.id.share_response);
+        timeoutInput = findViewById(R.id.timeout_input);
+        scoreInput = findViewById(R.id.score_input);
 
         textBox.setMovementMethod(new ScrollingMovementMethod());
         btnInfo.setEnabled(false);
@@ -318,6 +325,15 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
+    private int parseOrDefault(String text, int def, int min, int max) {
+        try {
+            int value = Integer.parseInt(text.trim());
+            return Math.max(min, Math.min(max, value));
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
     private void capture(String action, int requestCode, FingerInput input) {
         try {
             Intent intent = new Intent();
@@ -332,11 +348,15 @@ public class ClientActivity extends AppCompatActivity {
                     Toast.makeText(ClientActivity.this, "Perform info request", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
+                int timeoutSeconds = parseOrDefault(timeoutInput.getText().toString(), DEFAULT_TIMEOUT_SECONDS, 1, Integer.MAX_VALUE);
+                int requestedScore = parseOrDefault(scoreInput.getText().toString(), DEFAULT_SCORE, 0, 100);
+
                 CaptureRequestDto captureRequestDto = new CaptureRequestDto();
                 captureRequestDto.env = DeviceConstants.ENVIRONMENT;
                 captureRequestDto.purpose = DeviceConstants.DeviceUsage.Authentication.getDeviceUsage();
                 captureRequestDto.specVersion = DeviceConstants.MDS_VERSION;
-                captureRequestDto.timeout = 10000;
+                captureRequestDto.timeout = timeoutSeconds * 1000;
                 captureRequestDto.captureTime = "2021-07-18T17:56:11Z";
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
                 captureRequestDto.transactionId = "1234567890";
@@ -344,7 +364,7 @@ public class ClientActivity extends AppCompatActivity {
                 bio.type = selectedDeviceType;
                 bio.count = "0";
                 bio.bioSubType = new String[]{"UNKNOWN"};
-                bio.requestedScore = 40;
+                bio.requestedScore = requestedScore;
                 // Echo the deviceId received from Info so it matches discover/info (MOSIP requirement).
                 bio.deviceId = (deviceIdValue != null) ? deviceIdValue : serialNo;
                 bio.deviceSubId = "0";

@@ -424,6 +424,7 @@ public class MDServiceActivity extends AppCompatActivity {
         intent.putExtra("deviceSubId", deviceSubId);
         intent.putExtra("bioSubType", bio.bioSubType);
         intent.putExtra("exception", bio.exception);
+        intent.putExtra("requestedScore", bio.requestedScore);
         startActivityForResult(intent, RequestCodeCapture);
     }
 

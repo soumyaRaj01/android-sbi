@@ -40,7 +40,7 @@ public class T5Capture {
         m_lightSensorHelper.start();
     }
 
-    public void capture(Context context, T5FingerCapturedListener listener, int deviceSubId, String[] bioSubType) {
+    public void capture(Context context, T5FingerCapturedListener listener, int deviceSubId, String[] bioSubType, int requestedScore, int captureTimeout) {
         T5FingerCaptureController t5FingerCaptureController = T5FingerCaptureController.getInstance();
         settingsPrefManager = new SettingsPrefManager(context);
         t5FingerCaptureController.setsavesdklogs(true);
@@ -102,7 +102,7 @@ public class T5Capture {
 
         t5FingerCaptureController.setSegmentationModes(segmentationModeSet);
 
-        t5FingerCaptureController.setNfiq1QualityThreshold(3);
+        t5FingerCaptureController.setNfiq1QualityThreshold(requestedScore);
 
         CaptureMode captureMode = CaptureMode.CAPTURE_MODE_SELF;
 
@@ -170,7 +170,7 @@ public class T5Capture {
 
         t5FingerCaptureController.setSlapImagesConfig(slapConfig);
 
-        t5FingerCaptureController.setTimeoutInSecs(60);
+        t5FingerCaptureController.setTimeoutInSecs(Math.max(1, captureTimeout / 1000));
 
 //        t5FingerCaptureController.setsavesdklogs(settingsPrefManager.isSaveSdkLogEnabled());
 //        t5FingerCaptureController.setSavefingerprints(settingsPrefManager.isSaveFingerprintsEnabled());

@@ -152,7 +152,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                 switch (modality.toLowerCase()) {
                     case "face":
                         T5FaceCapture faceCapture = new T5FaceCapture(this);
-                        faceCapture.startFaceCapture(this, this);
+                        faceCapture.startFaceCapture(this, this, requestedScore ,captureTimeout);
                         // The flow will continue in the callback methods below
                         break;
                     case "finger":
@@ -245,7 +245,9 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
             }
             Map<String, Uri> uris = new HashMap<>();
             uris.put("", bioDevice.generateFaceIsoUri(capturedData));
-            captureSuccessful(uris, faceQualityScore);
+
+            int quality = faceBox != null ? Math.round(faceBox.mUnifiedQualityScore * 100) : faceQualityScore;
+            captureSuccessful(uris, quality);
         } catch (Exception e) {
             captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
         }
@@ -258,7 +260,36 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
     @Override
     public void onTimedout(byte[] bytes) {
-        captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
+        try {
+            if (bytes == null || bytes.length == 0) {
+                captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
+                return;
+            }
+            // DEBUG: dump the SDK's returned best-frame to a JPG for verification (Tech5 issue proof).
+            saveTimeoutImageForDebug(bytes);
+            Map<String, Uri> uris = new HashMap<>();
+            uris.put("", bioDevice.generateFaceIsoUri(bytes));
+            captureSuccessful(uris, faceQualityScore);
+        } catch (Exception e) {
+            captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
+        }
+    }
+
+    private void saveTimeoutImageForDebug(byte[] bytes) {
+        try {
+            java.io.File dir = new java.io.File(getExternalFilesDir(null), "face_timeout");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            java.io.File out = new java.io.File(dir, "face_timeout_" + System.currentTimeMillis() + ".jpg");
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
+                fos.write(bytes);
+            }
+            android.util.Log.i("CaptureActivity", "Saved face-timeout image: " + out.getAbsolutePath()
+                    + " (" + bytes.length + " bytes)");
+        } catch (Exception e) {
+            android.util.Log.w("CaptureActivity", "Failed to save face-timeout debug image", e);
+        }
     }
 
     public void captureSuccessful(Map<String, Uri> uris, int quality) {

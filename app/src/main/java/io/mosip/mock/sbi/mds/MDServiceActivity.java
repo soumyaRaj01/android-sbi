@@ -44,6 +44,7 @@ import io.mosip.mock.sbi.dto.Error;
 import io.mosip.mock.sbi.faceCaptureApi.CaptureResult;
 import io.mosip.mock.sbi.scanner.ResponseGenerator.ResponseGenHelper;
 import io.mosip.mock.sbi.sdk.T5DeviceStatus;
+import io.mosip.mock.sbi.sdk.T5FaceDeviceStatus;
 import io.mosip.mock.sbi.secureLib.DeviceKeystore;
 import io.mosip.mock.sbi.utility.CommonDeviceAPI;
 import io.mosip.mock.sbi.utility.DeviceConstants;
@@ -82,13 +83,6 @@ public class MDServiceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mdservice);
 
-        if (ActivityCompat.checkSelfPermission(MDServiceActivity.this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MDServiceActivity.this,
-                    new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
-            generateResponse(null, true);
-            return;
-        }
         applicationContext = this.getApplicationContext();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
@@ -139,7 +133,9 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != discoverRequestDto) {
                         switch (discoverRequestDto.type) {
                             case "Face":
-                                responseBody = discoverDevice(currentFaceStatus, szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
+                                responseBody = discoverDevice(
+                                        T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
+                                        szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
                                 break;
                             case "Finger":
                                 responseBody = discoverDevice(
@@ -152,14 +148,14 @@ public class MDServiceActivity extends AppCompatActivity {
                                 break;
                             case "Biometric Device":
                                 List<DiscoverDto> deviceList = new ArrayList<>();
-                                List<DiscoverDto> faceDevice = discoverDevice(currentFaceStatus, szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
+                                List<DiscoverDto> faceDevice = discoverDevice(
+                                        T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
+                                        szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
                                 List<DiscoverDto> fingerDevice = discoverDevice(
                                         T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus),
                                         szTs, "io.mosip.t5mock.sbi.finger", DeviceConstants.BioType.Finger);
-//                                List<DiscoverDto> irisDevice = discoverDevice(currentIrisStatus, szTs, "io.mosip.t5mock.sbi.iris", DeviceConstants.BioType.Iris);
                                 deviceList.addAll(faceDevice);
                                 deviceList.addAll(fingerDevice);
-//                                deviceList.addAll(irisDevice);
                                 responseBody = deviceList;
                                 break;
                             default:
@@ -180,7 +176,9 @@ public class MDServiceActivity extends AppCompatActivity {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = actionType.replace(".Info", ".info") + ".info";
-                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFaceStatus, szTs, requestType, DeviceConstants.BioType.Face);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(
+                            T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
+                            szTs, requestType, DeviceConstants.BioType.Face);
 
                     generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
@@ -283,12 +281,6 @@ public class MDServiceActivity extends AppCompatActivity {
 
     private void capture(byte[] input, DeviceConstants.BioType bioType) {
         try {
-            if (ActivityCompat.checkSelfPermission(MDServiceActivity.this, Manifest.permission.CAMERA)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MDServiceActivity.this,
-                        new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
-                return;
-            }
             captureRequestDto = ob.readValue(input, CaptureRequestDto.class);
 
             //Validations

@@ -265,30 +265,12 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                 captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
                 return;
             }
-            // DEBUG: dump the SDK's returned best-frame to a JPG for verification (Tech5 issue proof).
-            saveTimeoutImageForDebug(bytes);
+
             Map<String, Uri> uris = new HashMap<>();
             uris.put("", bioDevice.generateFaceIsoUri(bytes));
             captureSuccessful(uris, faceQualityScore);
         } catch (Exception e) {
             captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
-        }
-    }
-
-    private void saveTimeoutImageForDebug(byte[] bytes) {
-        try {
-            java.io.File dir = new java.io.File(getExternalFilesDir(null), "face_timeout");
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            java.io.File out = new java.io.File(dir, "face_timeout_" + System.currentTimeMillis() + ".jpg");
-            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
-                fos.write(bytes);
-            }
-            android.util.Log.i("CaptureActivity", "Saved face-timeout image: " + out.getAbsolutePath()
-                    + " (" + bytes.length + " bytes)");
-        } catch (Exception e) {
-            android.util.Log.w("CaptureActivity", "Failed to save face-timeout debug image", e);
         }
     }
 

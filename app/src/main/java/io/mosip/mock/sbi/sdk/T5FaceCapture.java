@@ -12,8 +12,12 @@ public class T5FaceCapture {
         sharedPreference = new AppSharedPreference(context);
     }
 
-    public void startFaceCapture(Context context, FaceCaptureListener listener) {
+    public void startFaceCapture(Context context, FaceCaptureListener listener, int requestedScore, int captureTimeout) {
         FaceCaptureController controller = FaceCaptureController.getInstance();
+
+        controller.setQualityThreshold(requestedScore / 100f);
+        controller.setCaptureTimeoutInSecs(Math.max(1, captureTimeout / 1000));
+        controller.setLivenessEnabled(sharedPreference.getIsLivenessEnabled());
 
         //No need to call this if Tech5 license portal is used to get the  license. Only needed in case of  license portal url chanhged or license portal is hosted on customer premise
         //controller.setUrl("https://pheonix-lic.tech5.tech");
@@ -34,7 +38,6 @@ public class T5FaceCapture {
 
 
         // controller.setTitle("Face Capture");
-        controller.setCaptureTimeoutInSecs(sharedPreference.getCaptureTimeout());
         controller.setShowBackButton(true);
 
         //to enable/disable camera switching in face capture screen, by default disabled

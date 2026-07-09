@@ -46,7 +46,7 @@ public class AppSharedPreference {
 
     private static final boolean DEFAULT_IS_OCCLUSION_ENABLED = true;
     private static final boolean DEFAULT_IS_EYE_CLOSED_ENABLED = true;
-    private static final boolean DEFAULT_IS_LIVENESS_ENABLED = false;
+    private static final boolean DEFAULT_IS_LIVENESS_ENABLED = true;
 
     private static final int DEFAULT_CAPTURE_TIMEOUT = 60;
     private static final String CAPTURE_TIMEOUT = "CAPTURE_TIMEOUT";
@@ -112,7 +112,7 @@ public class AppSharedPreference {
     private static final String IS_SUN_GLASS_DETECTION = "IS_SUN_GLASS_DETECTION";
 
     private static final String ENABLE_CAMERA_SWITCHING = "ENABLE_CAMERA_SWITCHING";
-    private static final Boolean DEFAULT_VAL_FOR_ENABLE_CAMERA_SWITCHING = false;
+    private static final Boolean DEFAULT_VAL_FOR_ENABLE_CAMERA_SWITCHING = true;
 
 
     public AppSharedPreference(Context context) {

@@ -2,6 +2,7 @@ package io.mosip.mock.sbi.device;
 
 import static io.mosip.mock.sbi.utility.DeviceConstants.*;
 
+import ai.tech5.finger.utils.Finger;
 import ai.tech5.finger.utils.FingerCaptureResult;
 import ai.tech5.finger.utils.T5FingerCapturedListener;
 import ai.tech5.pheonix.capture.controller.FaceCaptureListener;
@@ -23,6 +24,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,21 +61,23 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     private String modality;
     private long responseDelay;
     private int captureTimeout;
+    private int requestedScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
+        fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
+        irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
 
         modality = getIntent().getStringExtra("modality");
         deviceSubId = getIntent().getIntExtra("deviceSubId", 1);
         captureTimeout = getIntent().getIntExtra("CaptureTimeout", Integer.MAX_VALUE);
         bioSubType = getIntent().getStringArrayExtra("bioSubType");
         exception = getIntent().getStringArrayExtra("exception");
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
-        fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
-        irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
+        requestedScore = getIntent().getIntExtra("requestedScore", fingerQualityScore);
 
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
                 , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
@@ -148,12 +152,12 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
                 switch (modality.toLowerCase()) {
                     case "face":
                         T5FaceCapture faceCapture = new T5FaceCapture(this);
-                        faceCapture.startFaceCapture(this, this);
+                        faceCapture.startFaceCapture(this, this, requestedScore ,captureTimeout);
                         // The flow will continue in the callback methods below
                         break;
                     case "finger":
                         T5Capture capture = new T5Capture(this);
-                        capture.capture(this, this, null, deviceSubId, bioSubType);
+                        capture.capture(this, this, deviceSubId, bioSubType, convertToNfiq1(requestedScore), captureTimeout);
                         // The flow will continue in the callback methods below
                         break;
                     case "iris":
@@ -174,22 +178,17 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         }, responseDelay);
     }
 
+    private int convertToNfiq1(int score) {
+        if (score >= 81) return 1;
+        else if (score >= 61) return 2;
+        else if (score >= 41) return 3;
+        else if (score >= 21) return 4;
+        else return 5;
+    }
+
     @Override
     public void onSuccess(FingerCaptureResult result) {
-        try {
-            if (result == null || result.fingers == null || result.fingers.isEmpty()) {
-                captureFailed(CAPTURE_FAILURE_STATUS, "No finger data captured");
-                return;
-            }
-            Map<String, Uri> uris = bioDevice.generateFingerIsoUris(result.fingers);
-            if (uris.isEmpty()) {
-                captureFailed(CAPTURE_FAILURE_STATUS, "No valid finger data captured");
-                return;
-            }
-            captureSuccessful(uris, fingerQualityScore);
-        } catch (Exception e) {
-            captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
-        }
+        handleFingerResult(result, false);
     }
 
     @Override
@@ -198,8 +197,37 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     }
 
     @Override
-    public void onTimedout() {
-        captureFailed(CAPTURE_FAILURE_STATUS, "Capture timeout");
+    public void onTimedout(FingerCaptureResult result) {
+        handleFingerResult(result, true);
+    }
+
+    private void handleFingerResult(FingerCaptureResult result, boolean timedOut) {
+        try {
+            if (result == null || result.fingers == null || result.fingers.isEmpty()) {
+                captureFailed(timedOut ? CaptureResult.CAPTURE_TIMEOUT : CAPTURE_FAILURE_STATUS,
+                        timedOut ? "Capture timeout" : "No finger data captured");
+                return;
+            }
+            Map<String, Uri> uris = bioDevice.generateFingerIsoUris(result.fingers);
+            if (uris.isEmpty()) {
+                captureFailed(CAPTURE_FAILURE_STATUS, "No valid finger data captured");
+                return;
+            }
+            captureSuccessful(uris, averageFingerQuality(result.fingers));
+        } catch (Exception e) {
+            captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
+        }
+    }
+
+    private int averageFingerQuality(List<Finger> fingers) {
+        if (fingers == null || fingers.isEmpty()) {
+            return 0;
+        }
+        int sum = 0;
+        for (Finger finger : fingers) {
+            sum += finger.quality;
+        }
+        return sum / fingers.size();
     }
 
     @Override
@@ -217,7 +245,9 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
             }
             Map<String, Uri> uris = new HashMap<>();
             uris.put("", bioDevice.generateFaceIsoUri(capturedData));
-            captureSuccessful(uris, faceQualityScore);
+
+            int quality = faceBox != null ? Math.round(faceBox.mUnifiedQualityScore * 100) : faceQualityScore;
+            captureSuccessful(uris, quality);
         } catch (Exception e) {
             captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
         }
@@ -230,7 +260,18 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
     @Override
     public void onTimedout(byte[] bytes) {
-        captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
+        try {
+            if (bytes == null || bytes.length == 0) {
+                captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
+                return;
+            }
+
+            Map<String, Uri> uris = new HashMap<>();
+            uris.put("", bioDevice.generateFaceIsoUri(bytes));
+            captureSuccessful(uris, faceQualityScore);
+        } catch (Exception e) {
+            captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
+        }
     }
 
     public void captureSuccessful(Map<String, Uri> uris, int quality) {

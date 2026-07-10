@@ -77,6 +77,10 @@ public class T5Capture {
             SegmentationMode dual = (bioSubType.length == 2) ? toDualSegmentationMode(bioSubType[0], bioSubType[1]) : null;
             if (dual != null) {
                 segmentationModeSet.add(dual);
+            } else if (bioSubType.length == 10) {
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
             } else {
                 for (String name : bioSubType) {
                     SegmentationMode mode = toSegmentationMode(name);
@@ -91,8 +95,16 @@ public class T5Capture {
             boolean isUnknown = bioSubType != null && bioSubType.length > 0
                     && DeviceConstants.BIO_NAME_UNKNOWN.equals(bioSubType[0]);
             if (isUnknown) {
-                for (int i = 0; i < bioSubType.length && i < UNKNOWN_FINGER_ORDER.length; i++) {
-                    segmentationModeSet.add(UNKNOWN_FINGER_ORDER[i]);
+                if (bioSubType.length == 2) segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX_MIDDLE);
+                else if (bioSubType.length == 10) {
+                    segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+                    segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
+                    segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
+                }
+                else {
+                    for (int i = 0; i < bioSubType.length && i < UNKNOWN_FINGER_ORDER.length; i++) {
+                        segmentationModeSet.add(UNKNOWN_FINGER_ORDER[i]);
+                    }
                 }
             }
             if (segmentationModeSet.isEmpty()) {

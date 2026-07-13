@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import io.mosip.mock.sbi.utility.DeviceConstants;
+import io.mosip.mock.sbi.utility.FingerPosition;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -30,6 +32,13 @@ public class T5Capture {
             SegmentationMode.SEGMENTATION_MODE_RIGHT_RING,  SegmentationMode.SEGMENTATION_MODE_RIGHT_LITTLE,
             SegmentationMode.SEGMENTATION_MODE_LEFT_THUMB,  SegmentationMode.SEGMENTATION_MODE_RIGHT_THUMB
     };
+
+    private static final List<String> LEFT_HAND_FINGERS = Arrays.asList(
+            DeviceConstants.BIO_NAME_LEFT_INDEX, DeviceConstants.BIO_NAME_LEFT_MIDDLE,
+            DeviceConstants.BIO_NAME_LEFT_RING, DeviceConstants.BIO_NAME_LEFT_LITTLE);
+    private static final List<String> RIGHT_HAND_FINGERS = Arrays.asList(
+            DeviceConstants.BIO_NAME_RIGHT_INDEX, DeviceConstants.BIO_NAME_RIGHT_MIDDLE,
+            DeviceConstants.BIO_NAME_RIGHT_RING, DeviceConstants.BIO_NAME_RIGHT_LITTLE);
 
     private static String m_rootDirectory;
     private static ExecutorService m_service = null;
@@ -48,7 +57,7 @@ public class T5Capture {
         t5FingerCaptureController.setLicense("");
 
         t5FingerCaptureController.showElipses(settingsPrefManager.isShowEllipsesEnabled());
-        t5FingerCaptureController.setLivenessCheck(settingsPrefManager.isLivenessEnabled());
+        t5FingerCaptureController.setLivenessThreshold(settingsPrefManager.getLivenessThreshold());
 
         t5FingerCaptureController.setIsGetQuality(settingsPrefManager.isGetQualityEnabled());
         t5FingerCaptureController.setIsGetNist2Quality(settingsPrefManager.isGetNfiq2QualityEnabled());
@@ -75,12 +84,27 @@ public class T5Capture {
             }
         } else if (bioSubType != null) {
             SegmentationMode dual = (bioSubType.length == 2) ? toDualSegmentationMode(bioSubType[0], bioSubType[1]) : null;
+            List<String> sameHandFingers;
             if (dual != null) {
                 segmentationModeSet.add(dual);
             } else if (bioSubType.length == 10) {
                 segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
                 segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
                 segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
+            } else if ((bioSubType.length == 2 || bioSubType.length == 3)
+                    && (sameHandFingers = matchingHandFingers(bioSubType)) != null) {
+                segmentationModeSet.add(sameHandFingers == LEFT_HAND_FINGERS
+                        ? SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP
+                        : SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
+                Set<String> requested = new HashSet<>(Arrays.asList(bioSubType));
+                for (String finger : sameHandFingers) {
+                    if (!requested.contains(finger)) {
+                        int pos = FingerPosition.positionOf(finger);
+                        if (pos > 0) {
+                            missingFingers.add(pos);
+                        }
+                    }
+                }
             } else {
                 for (String name : bioSubType) {
                     SegmentationMode mode = toSegmentationMode(name);
@@ -191,6 +215,17 @@ public class T5Capture {
         t5FingerCaptureController.setReversefingerprints(settingsPrefManager.isGetFingerReverseEnabled());
 
         t5FingerCaptureController.captureFingers(context, listener);
+    }
+
+    private static List<String> matchingHandFingers(String[] bioSubType) {
+        Set<String> requested = new HashSet<>(Arrays.asList(bioSubType));
+        if (LEFT_HAND_FINGERS.containsAll(requested)) {
+            return LEFT_HAND_FINGERS;
+        }
+        if (RIGHT_HAND_FINGERS.containsAll(requested)) {
+            return RIGHT_HAND_FINGERS;
+        }
+        return null;
     }
 
     private static SegmentationMode toDualSegmentationMode(String a, String b) {

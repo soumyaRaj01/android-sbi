@@ -64,12 +64,6 @@ public abstract class BioDevice {
         segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_IRIS, PROFILE_BIO_FILE_NAME_RIGHT_IRIS);
     }
 
-    public Map<String, Uri> captureFaceModality() {
-        Map<String, Uri> uris = new HashMap<>();
-        uris.put("", getBioAttributeURI(segmentUriMapping.get("")));
-        return uris;
-    }
-
     public Uri generateFaceIsoUri(byte[] capturedImage) {
         Bitmap bmp = BitmapFactory.decodeByteArray(capturedImage, 0, capturedImage.length);
         if (bmp == null) {
@@ -107,8 +101,6 @@ public abstract class BioDevice {
         saveByteArray(isoBytes, isoUri);
         return isoUri;
     }
-
-    public abstract Map<String, Uri> captureFingersModality(int deviceSubId, String[] bioSubType, String[] exception);
 
     public abstract Map<String, Uri> captureIrisModality(int deviceSubId, String[] bioSubType, String[] exception);
 

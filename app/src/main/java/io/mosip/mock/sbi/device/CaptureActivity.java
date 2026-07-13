@@ -79,13 +79,8 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         exception = getIntent().getStringArrayExtra("exception");
         requestedScore = getIntent().getIntExtra("requestedScore", fingerQualityScore);
 
-        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
-                , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
-        if (DeviceUsage.Authentication.getDeviceUsage().equals(deviceUsage)) {
-            bioDevice = new AuthBioDevice(this);
-        } else {
-            bioDevice = new RegBioDevice(this);
-        }
+        // Registration removed — this mock performs auth capture only.
+        bioDevice = new AuthBioDevice(this);
 
         switch (modality.toLowerCase()) {
             case "face":

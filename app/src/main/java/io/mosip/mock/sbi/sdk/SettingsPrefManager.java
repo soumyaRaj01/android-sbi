@@ -185,7 +185,7 @@ private static final int DEFAULT_CAPTURE_MODE_ID = 0;  // default capture mode
 
     private static final String KEY_LIVENESS_THRESHOLD = "liveness_threshold";
     private static final String KEY_QUALITY_THRESHOLD = "quality_threshold";
-    private static final float DEFAULT_LIVENESS_THRESHOLD = 0.75f;
+    private static final float DEFAULT_LIVENESS_THRESHOLD = 0.5f;
     private static final float DEFAULT_QUALITY_THRESHOLD = 35f;
 
     public float getLivenessThreshold() {

@@ -79,13 +79,8 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         exception = getIntent().getStringArrayExtra("exception");
         requestedScore = getIntent().getIntExtra("requestedScore", fingerQualityScore);
 
-        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
-                , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
-        if (DeviceUsage.Authentication.getDeviceUsage().equals(deviceUsage)) {
-            bioDevice = new AuthBioDevice(this);
-        } else {
-            bioDevice = new RegBioDevice(this);
-        }
+        // Registration removed — this mock performs auth capture only.
+        bioDevice = new AuthBioDevice(this);
 
         switch (modality.toLowerCase()) {
             case "face":
@@ -225,9 +220,19 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         }
         int sum = 0;
         for (Finger finger : fingers) {
-            sum += finger.quality;
+            sum += nfiqToScore(finger.quality);
         }
         return sum / fingers.size();
+    }
+
+    private int nfiqToScore(int nfiq) {
+        switch (nfiq) {
+            case 1:  return 90;
+            case 2:  return 70;
+            case 3:  return 50;
+            case 4:  return 30;
+            default: return 10;
+        }
     }
 
     @Override

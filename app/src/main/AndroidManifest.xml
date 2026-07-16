@@ -43,13 +43,10 @@
                 <action android:name="io.sbi.device" />
                 <action android:name="io.mosip.t5mock.sbi.face.Info" />
                 <action android:name="io.mosip.t5mock.sbi.face.Capture" />
-                <action android:name="io.mosip.t5mock.sbi.face.rCapture" />
                 <action android:name="io.mosip.t5mock.sbi.finger.Info" />
                 <action android:name="io.mosip.t5mock.sbi.finger.Capture" />
-                <action android:name="io.mosip.t5mock.sbi.finger.rCapture" />
                 <action android:name="io.mosip.t5mock.sbi.iris.Info" />
                 <action android:name="io.mosip.t5mock.sbi.iris.Capture" />
-                <action android:name="io.mosip.t5mock.sbi.iris.rCapture" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

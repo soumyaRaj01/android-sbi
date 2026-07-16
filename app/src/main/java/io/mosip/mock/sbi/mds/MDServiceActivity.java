@@ -211,7 +211,6 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.t5mock.sbi.face.rCapture":
             case "io.mosip.t5mock.sbi.face.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
@@ -224,7 +223,6 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.t5mock.sbi.finger.rCapture":
             case "io.mosip.t5mock.sbi.finger.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
@@ -237,7 +235,6 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.t5mock.sbi.iris.rCapture":
             case "io.mosip.t5mock.sbi.iris.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
@@ -289,16 +286,9 @@ public class MDServiceActivity extends AppCompatActivity {
             int deviceSubId = Integer.parseInt(mosipBioRequest.get(0).deviceSubId);
             int count = Integer.parseInt(mosipBioRequest.get(0).count);
 
-            if (deviceUtil.DEVICE_USAGE == DeviceConstants.DeviceUsage.Registration) {
-                if (!validateBioCountReg(mosipBioRequest.get(0), bioType)) {
-                    generateCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                    return;
-                }
-            } else {
-                if (!validateBioCountAuth(bioType, count, mosipBioRequest.get(0))) {
-                    generateCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                    return;
-                }
+            if (!validateBioCountAuth(bioType, count, mosipBioRequest.get(0))) {
+                generateCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                return;
             }
 
             if (DeviceConstants.environmentList.contains(captureRequestDto.env)
@@ -345,65 +335,6 @@ public class MDServiceActivity extends AppCompatActivity {
             case Face:
                 if (bioCount < 0 || bioCount > 1)
                     return false;
-                break;
-        }
-        return true;
-    }
-
-    private boolean validateBioCountReg(CaptureRequestDeviceDetailDto bioRequest, DeviceConstants.BioType bioType) {
-        int deviceSubId = Integer.parseInt(bioRequest.deviceSubId);
-        String[] bioException = bioRequest.exception;// Bio exceptions
-        int count = Integer.parseInt(bioRequest.count);
-        int exceptionCount = (bioException != null ? bioException.length : 0);
-        int finalCount = count + exceptionCount;
-
-        switch (bioType) {
-            case Finger:
-                switch (deviceSubId) {
-                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
-                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT:
-                        // Max Count = 4 exception allowed
-                        if (finalCount != 4) {
-                            return false;
-                        }
-                        break;
-                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB:
-                        // Max Count = 2 exception allowed
-                        if (finalCount != 2) {
-                            return false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case Iris:
-                switch (deviceSubId) {
-                    case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT:
-                    case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT:
-                        // Max Count = 1 no exception allowed
-                        if (count != 1 || exceptionCount != 0) {
-                            return false;
-                        }
-                        break;
-                    case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH:
-                        // Max Count = 2 exception allowed
-                        finalCount = count + exceptionCount;
-                        if (finalCount != 2) {
-                            return false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case Face:
-                // Max Face Count = 1 with or without exception
-                if (count != 1) {
-                    return false;
-                }
-                break;
-            default:
                 break;
         }
         return true;

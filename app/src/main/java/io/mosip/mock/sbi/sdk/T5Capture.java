@@ -1,27 +1,22 @@
 package io.mosip.mock.sbi.sdk;
 
 import ai.tech5.finger.utils.*;
-import android.Manifest;
 import android.content.Context;
-import android.util.Log;
 import androidx.annotation.NonNull;
 
 import io.mosip.mock.sbi.utility.DeviceConstants;
+import io.mosip.mock.sbi.utility.FingerPosition;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 public class T5Capture {
 
     SettingsPrefManager settingsPrefManager;
-
-    private static final String[] APP_PERMISSIONS = {Manifest.permission.CAMERA};
 
     private static final SegmentationMode[] UNKNOWN_FINGER_ORDER = {
             SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX,  SegmentationMode.SEGMENTATION_MODE_LEFT_MIDDLE,
@@ -31,8 +26,13 @@ public class T5Capture {
             SegmentationMode.SEGMENTATION_MODE_LEFT_THUMB,  SegmentationMode.SEGMENTATION_MODE_RIGHT_THUMB
     };
 
-    private static String m_rootDirectory;
-    private static ExecutorService m_service = null;
+    private static final List<String> LEFT_HAND_FINGERS = Arrays.asList(
+            DeviceConstants.BIO_NAME_LEFT_INDEX, DeviceConstants.BIO_NAME_LEFT_MIDDLE,
+            DeviceConstants.BIO_NAME_LEFT_RING, DeviceConstants.BIO_NAME_LEFT_LITTLE);
+    private static final List<String> RIGHT_HAND_FINGERS = Arrays.asList(
+            DeviceConstants.BIO_NAME_RIGHT_INDEX, DeviceConstants.BIO_NAME_RIGHT_MIDDLE,
+            DeviceConstants.BIO_NAME_RIGHT_RING, DeviceConstants.BIO_NAME_RIGHT_LITTLE);
+
     private LightSensorHelper m_lightSensorHelper = null;
 
     public T5Capture(Context context){
@@ -48,7 +48,7 @@ public class T5Capture {
         t5FingerCaptureController.setLicense("");
 
         t5FingerCaptureController.showElipses(settingsPrefManager.isShowEllipsesEnabled());
-        t5FingerCaptureController.setLivenessCheck(settingsPrefManager.isLivenessEnabled());
+        t5FingerCaptureController.setLivenessThreshold(settingsPrefManager.getLivenessThreshold());
 
         t5FingerCaptureController.setIsGetQuality(settingsPrefManager.isGetQualityEnabled());
         t5FingerCaptureController.setIsGetNist2Quality(settingsPrefManager.isGetNfiq2QualityEnabled());
@@ -75,12 +75,27 @@ public class T5Capture {
             }
         } else if (bioSubType != null) {
             SegmentationMode dual = (bioSubType.length == 2) ? toDualSegmentationMode(bioSubType[0], bioSubType[1]) : null;
+            List<String> sameHandFingers;
             if (dual != null) {
                 segmentationModeSet.add(dual);
             } else if (bioSubType.length == 10) {
                 segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
                 segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
                 segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
+            } else if ((bioSubType.length == 2 || bioSubType.length == 3)
+                    && (sameHandFingers = matchingHandFingers(bioSubType)) != null) {
+                segmentationModeSet.add(sameHandFingers == LEFT_HAND_FINGERS
+                        ? SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP
+                        : SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
+                Set<String> requested = new HashSet<>(Arrays.asList(bioSubType));
+                for (String finger : sameHandFingers) {
+                    if (!requested.contains(finger)) {
+                        int pos = FingerPosition.positionOf(finger);
+                        if (pos > 0) {
+                            missingFingers.add(pos);
+                        }
+                    }
+                }
             } else {
                 for (String name : bioSubType) {
                     SegmentationMode mode = toSegmentationMode(name);
@@ -193,6 +208,17 @@ public class T5Capture {
         t5FingerCaptureController.captureFingers(context, listener);
     }
 
+    private static List<String> matchingHandFingers(String[] bioSubType) {
+        Set<String> requested = new HashSet<>(Arrays.asList(bioSubType));
+        if (LEFT_HAND_FINGERS.containsAll(requested)) {
+            return LEFT_HAND_FINGERS;
+        }
+        if (RIGHT_HAND_FINGERS.containsAll(requested)) {
+            return RIGHT_HAND_FINGERS;
+        }
+        return null;
+    }
+
     private static SegmentationMode toDualSegmentationMode(String a, String b) {
         Set<String> pair = new HashSet<>(Arrays.asList(a, b));
         if (isPair(pair, DeviceConstants.BIO_NAME_LEFT_INDEX, DeviceConstants.BIO_NAME_LEFT_MIDDLE)) {
@@ -251,141 +277,4 @@ public class T5Capture {
         return segmentedFingersConfiguration;
     }
 
-//    @Override
-//    public void onSuccess(FingerCaptureResult result) {
-////        if (settingsPrefManager.isGetFingerReverseEnabled() && result.reversefingerScores != SE_OK) {
-////            Toast.makeText(MainActivity.this, "Something went wrong. Try again!", Toast.LENGTH_LONG).show();
-////            return;
-////        }
-////        Result captureResult = new Result();
-////        captureResult.livenessScores = result.livenessScores;
-////
-////        m_rootDirectory = Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + File.separator + System.currentTimeMillis();
-////        if (result.fingers != null && !result.fingers.isEmpty()) {
-////            captureResult.fingers = saveFingerImages(result.fingers);
-////        }
-////
-////        Intent intent = new Intent(MainActivity.this, ResultScreen.class);
-////        intent.putExtra("result", captureResult);
-////        startActivity(intent);
-//    }
-//
-//    @Override
-//    public void onTimedout() {
-////        Toast.makeText(T5CaptureActivity.this, "capture timedout ", Toast.LENGTH_LONG).show();
-//    }
-//
-//    @Override
-//    public void onFailure(String errorMessage) {
-////        Toast.makeText(T5CaptureActivity.this, "error " + errorMessage, Toast.LENGTH_LONG).show();
-//        Log.e("TAG", errorMessage);
-//    }
-//
-//    @Override
-//    public void onCancelled() {
-////        Toast.makeText(T5CaptureActivity.this, "User cancelled ", Toast.LENGTH_LONG).show();
-//    }
-
-//    private ArrayList<FingerData> saveFingerImages(ArrayList<Finger> fingers) {
-//        ArrayList<FingerData> list = new ArrayList<>();
-//
-//        int threadCount = fingers.size();
-//        SaveImageThread[] saveImageThreads = null;
-//
-//        try {
-//            saveImageThreads = new SaveImageThread[threadCount];
-//            ArrayList<Future<Runnable>> futures = new ArrayList<>();
-//            int threadIndex;
-//            for (threadIndex = 0; threadIndex < threadCount; threadIndex++) {
-//
-//
-//                Finger finger = fingers.get(threadIndex);
-//
-//                Log.d("TAG", "finger pos " + finger.pos + " type " + finger.primaryImageType + " prop quality " + finger.quality + " nist2 quality " + finger.nist2Quality + " nist quality " + finger.nistQuality + " image size " + (finger.primaryImage == null ? "null" : finger.primaryImage.length));
-//
-//                saveImageThreads[threadIndex] = new SaveImageThread(finger);
-//
-//                Future future = m_service.submit(saveImageThreads[threadIndex]);
-//                futures.add(future);
-//            }
-//
-//            for (Future<Runnable> future : futures) {
-//                future.get();
-//            }
-//
-//            for (threadIndex = 0; threadIndex < threadCount; threadIndex++) {
-//                SaveImageThread thread = saveImageThreads[threadIndex];
-//
-//                FingerData fingerData = thread.getFingerData();
-//                list.add(fingerData);
-//
-//            }
-//
-//        } catch (Exception ignore) {
-//        }
-//
-//        return list;
-//    }
-
-
-//    public static class SaveImageThread implements Runnable {
-//        private final Finger finger;
-//        private FingerData fingerData;
-//
-//        public FingerData getFingerData() {
-//            return fingerData;
-//        }
-//
-//        public SaveImageThread(Finger finger) {
-//            this.finger = finger;
-//        }
-//
-//
-//        @Override
-//        public void run() {
-//
-//
-//            fingerData = new FingerData(finger);
-//
-//            String extn = ".wsq";
-//
-//            if (finger.primaryImageType == ImageType.IMAGE_TYPE_BMP) {
-//                extn = ".bmp";
-//            } else if (finger.primaryImageType == ImageType.IMAGE_TYPE_PNG) {
-//                extn = ".png";
-//            }
-//
-//
-//            String fingerImgPath = m_rootDirectory + File.separator + "prim_finger_" + finger.pos + extn;
-//
-////            File rootDir = this.getExternalFilesDir(null);
-////            File sessionDir = new File(rootDir, String.valueOf(System.currentTimeMillis()));
-////            File file = new File(sessionDir, "prim_finger_" + finger.pos + extn);
-//
-//            writeToFile(finger.primaryImage, fingerImgPath);
-//
-//            fingerData.primaryImagePath = fingerImgPath;
-//
-//
-//            if (finger.displayImage != null && finger.displayImage.length > 0) {
-//
-//                String displImgextn = ".wsq";
-//
-//                if (finger.displayImageType == ImageType.IMAGE_TYPE_BMP) {
-//                    displImgextn = ".bmp";
-//                } else if (finger.displayImageType == ImageType.IMAGE_TYPE_PNG) {
-//                    displImgextn = ".png";
-//                }
-//
-//
-//                String displayfingerImgPath = m_rootDirectory + File.separator + "disp_finger_" + finger.pos + displImgextn;
-//
-//                writeToFile(finger.displayImage, displayfingerImgPath);
-//
-//                fingerData.displayImagePath = displayfingerImgPath;
-//
-//
-//            }
-//        }
-//    }
 }

@@ -220,9 +220,19 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         }
         int sum = 0;
         for (Finger finger : fingers) {
-            sum += finger.quality;
+            sum += nfiqToScore(finger.quality);
         }
         return sum / fingers.size();
+    }
+
+    private int nfiqToScore(int nfiq) {
+        switch (nfiq) {
+            case 1:  return 90;
+            case 2:  return 70;
+            case 3:  return 50;
+            case 4:  return 30;
+            default: return 10;
+        }
     }
 
     @Override

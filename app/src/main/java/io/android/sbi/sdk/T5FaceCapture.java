@@ -5,6 +5,9 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 public class T5FaceCapture {
+    /** TODO: set the Tech5-issued liveness license - liveness stays non-functional while this is empty. */
+    private static final String LIVENESS_LICENSE = "";
+
     private AppSharedPreference sharedPreference = null;
     private int colorR = 125, colorG = 125, colorB = 125;
 
@@ -17,7 +20,8 @@ public class T5FaceCapture {
 
         controller.setQualityThreshold(requestedScore / 100f);
         controller.setCaptureTimeoutInSecs(Math.max(1, captureTimeout / 1000));
-        controller.setLivenessEnabled(sharedPreference.getIsLivenessEnabled());
+        controller.setIsLivenessEnabled(sharedPreference.getIsLivenessEnabled());
+        controller.setLivenessLicense(LIVENESS_LICENSE);
 
         //No need to call this if Tech5 license portal is used to get the  license. Only needed in case of  license portal url chanhged or license portal is hosted on customer premise
         //controller.setUrl("https://pheonix-lic.tech5.tech");
@@ -74,7 +78,8 @@ public class T5FaceCapture {
 
         controller.setEnableCaptureAfter(sharedPreference.getEnableCaptureAfter());
 
-        controller.startFaceCapture("", context, listener);
+        controller.setLicense("");
+        controller.startFaceCapture(context, listener);
     }
 
     @NonNull

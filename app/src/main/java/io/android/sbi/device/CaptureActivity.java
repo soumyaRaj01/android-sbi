@@ -260,8 +260,10 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     }
 
     @Override
-    public void onTimedout(byte[] bytes) {
+    public void onTimedout(byte[] bytes, float quality) {
         try {
+            // The SDK returns null bytes when no face was ever captured, and the best frame's
+            // unified quality (0.0-1.0) otherwise.
             if (bytes == null || bytes.length == 0) {
                 captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
                 return;
@@ -269,7 +271,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
             Map<String, Uri> uris = new HashMap<>();
             uris.put("", bioDevice.generateFaceIsoUri(bytes));
-            captureSuccessful(uris, faceQualityScore);
+            captureSuccessful(uris, Math.round(quality * 100));
         } catch (Exception e) {
             captureFailed(CAPTURE_FAILURE_STATUS, e.getMessage());
         }

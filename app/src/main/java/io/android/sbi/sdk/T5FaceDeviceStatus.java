@@ -4,7 +4,6 @@ package io.android.sbi.sdk;
 // getDeviceStatus(Context, String, DeviceStatusListener) and hasFrontAndBackCamera(Context)
 // from ai.tech5.pheonix.capture.controller, so this helper no longer compiles.
 // Callers now use the configured face status (currentFaceStatus) directly.
-// TODO: rework around the new FaceCaptureController.initSDK(Context, String) if live face
 // device status is needed again.
 
 //import android.content.Context;

@@ -693,12 +693,10 @@ public class ClientActivity extends AppCompatActivity {
 
                                 JSONObject digitalIdObj = new JSONObject(new String(digitalIdPayload));
                                 serialNo = digitalIdObj.getString("serialNo");
-                                if (!serialNo.isEmpty()) {
-                                    deviceIdRow.setVisibility(View.VISIBLE);
-                                    deviceId.setText(serialNo);
-                                }
                                 if (infoObject.has("deviceId")) {
                                     deviceIdValue = infoObject.getString("deviceId");
+                                    deviceIdRow.setVisibility(View.VISIBLE);
+                                    deviceId.setText(deviceIdValue);
                                 }
                                 String status = infoObject.has("deviceStatus")
                                         ? infoObject.getString("deviceStatus") : "";

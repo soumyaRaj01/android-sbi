@@ -41,7 +41,7 @@ import io.android.sbi.dto.Error;
 import io.android.sbi.faceCaptureApi.CaptureResult;
 import io.android.sbi.scanner.ResponseGenerator.ResponseGenHelper;
 import io.android.sbi.sdk.T5DeviceStatus;
-import io.android.sbi.sdk.T5FaceDeviceStatus;
+//import io.android.sbi.sdk.T5FaceDeviceStatus;
 import io.android.sbi.secureLib.DeviceKeystore;
 import io.android.sbi.utility.CommonDeviceAPI;
 import io.android.sbi.utility.DeviceConstants;
@@ -130,8 +130,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != discoverRequestDto) {
                         switch (discoverRequestDto.type) {
                             case "Face":
-                                responseBody = discoverDevice(
-                                        T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
+                                responseBody = discoverDevice(currentFaceStatus,
                                         szTs, "io.tech.sbi.face", DeviceConstants.BioType.Face);
                                 break;
                             case "Finger":
@@ -145,8 +144,7 @@ public class MDServiceActivity extends AppCompatActivity {
                                 break;
                             case "Biometric Device":
                                 List<DiscoverDto> deviceList = new ArrayList<>();
-                                List<DiscoverDto> faceDevice = discoverDevice(
-                                        T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
+                                List<DiscoverDto> faceDevice = discoverDevice(currentFaceStatus,
                                         szTs, "io.tech.sbi.face", DeviceConstants.BioType.Face);
                                 List<DiscoverDto> fingerDevice = discoverDevice(
                                         T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus),
@@ -173,8 +171,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = actionType.replace(".Info", ".info") + ".info";
-                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(
-                            T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFaceStatus,
                             szTs, requestType, DeviceConstants.BioType.Face);
 
                     generateResponse(deviceInfo, false);

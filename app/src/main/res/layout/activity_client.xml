@@ -10,7 +10,7 @@
         android:id="@+id/toolbar_client"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/mosip_primary"
+        android:background="@color/primary"
         android:elevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -177,18 +177,6 @@
                     android:orientation="vertical"
                     android:visibility="visible">
 
-<!--                    <ImageView-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_marginStart="20dp"-->
-<!--                        android:layout_marginTop="20dp"-->
-<!--                        android:layout_marginEnd="20dp"-->
-<!--                        android:layout_marginBottom="20dp"-->
-<!--                        android:src="@drawable/logo"-->
-<!--                        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                        app:layout_constraintEnd_toEndOf="parent"-->
-<!--                        app:layout_constraintStart_toStartOf="parent"-->
-<!--                        app:layout_constraintTop_toTopOf="parent" />-->
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -239,7 +227,7 @@
                         android:text="share"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:tint="@color/mosip_primary" />
+                        app:tint="@color/primary" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/textbox"
@@ -255,20 +243,6 @@
                         app:layout_constraintTop_toBottomOf="@id/share_response" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
-
-<!--            <TextView-->
-<!--                android:id="@+id/deviceUsageTextView"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="@string/device_purpose_registration"-->
-<!--                android:textSize="20sp"-->
-<!--                android:textStyle="bold"-->
-<!--                android:gravity="center"-->
-<!--                app:layout_constraintBottom_toTopOf="@id/action_table"-->
-<!--                app:layout_constraintEnd_toEndOf="parent"-->
-<!--                app:layout_constraintStart_toEndOf="parent"-->
-<!--                app:layout_constraintTop_toBottomOf="@+id/card2"-->
-<!--                />-->
 
             <TableLayout
                 android:id="@+id/action_table"
@@ -389,14 +363,6 @@
                         android:enabled="false"
                         android:text="@string/info" />
 
-<!--                    <com.google.android.material.button.MaterialButton-->
-<!--                        android:id="@+id/rcapture"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:width="150dp"-->
-<!--                        android:layout_marginEnd="10dp"-->
-<!--                        android:text="@string/rcapture" />-->
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/capture"
                         android:layout_width="wrap_content"
@@ -406,27 +372,6 @@
                         android:text="@string/capture" />
                 </TableRow>
 
-<!--                <TableRow-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="1"-->
-<!--                    android:gravity="center_horizontal">-->
-
-<!--                    <com.google.android.material.button.MaterialButton-->
-<!--                        android:id="@+id/deviceKeyExportBtn"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:width="150dp"-->
-<!--                        android:layout_marginEnd="10dp"-->
-<!--                        android:text="@string/export_device_key" />-->
-
-<!--                    <com.google.android.material.button.MaterialButton-->
-<!--                        android:id="@+id/ftmKeyExportBtn"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:width="150dp"-->
-<!--                        android:text="@string/export_ftm_key" />-->
-<!--                </TableRow>-->
             </TableLayout>
 
             <ImageView
@@ -434,20 +379,17 @@
                 android:layout_width="128dp"
                 android:layout_height="64dp"
                 android:layout_marginBottom="20dp"
-                android:onClick="mosipSpecWebsite"
                 android:src="@drawable/app_icon"
-                app:layout_constraintBottom_toTopOf="@id/mosip_link_label"
+                app:layout_constraintBottom_toTopOf="@id/link_label"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                android:contentDescription="@string/mosip_logo" />
+                app:layout_constraintStart_toStartOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/mosip_link_label"
+                android:id="@+id/link_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="9dp"
-                android:text="www.mosip.io"
-                android:textColor="@color/mosip_primary"
+                android:textColor="@color/primary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />

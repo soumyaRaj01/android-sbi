@@ -77,7 +77,7 @@ static OPJ_BOOL mem_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
 }
 
 JNIEXPORT jbyteArray JNICALL
-Java_io_mosip_mock_sbi_sdk_GrayJp2Encoder_encodeGray8ToJp2(JNIEnv *env, jclass clazz,
+Java_io_android_sbi_sdk_GrayJp2Encoder_encodeGray8ToJp2(JNIEnv *env, jclass clazz,
                                                            jbyteArray grayArr, jint width,
                                                            jint height, jint compressionRatio) {
     if (grayArr == NULL || width <= 0 || height <= 0) {

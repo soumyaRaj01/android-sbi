@@ -49,18 +49,18 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import io.mosip.mock.sbi.R;
-import io.mosip.mock.sbi.constants.ClientConstants;
-import io.mosip.mock.sbi.dto.CaptureDetail;
-import io.mosip.mock.sbi.dto.CaptureRequestDeviceDetailDto;
-import io.mosip.mock.sbi.dto.CaptureRequestDto;
-import io.mosip.mock.sbi.dto.CaptureResponse;
-import io.mosip.mock.sbi.dto.DeviceDiscoveryRequestDetail;
-import io.mosip.mock.sbi.dto.DeviceInfoResponse;
-import io.mosip.mock.sbi.dto.DiscoverDto;
-import io.mosip.mock.sbi.dto.Error;
-import io.mosip.mock.sbi.secureLib.DeviceKeystore;
-import io.mosip.mock.sbi.utility.DeviceConstants;
+import io.android.sbi.R;
+import io.android.sbi.constants.ClientConstants;
+import io.android.sbi.dto.CaptureDetail;
+import io.android.sbi.dto.CaptureRequestDeviceDetailDto;
+import io.android.sbi.dto.CaptureRequestDto;
+import io.android.sbi.dto.CaptureResponse;
+import io.android.sbi.dto.DeviceDiscoveryRequestDetail;
+import io.android.sbi.dto.DeviceInfoResponse;
+import io.android.sbi.dto.DiscoverDto;
+import io.android.sbi.dto.Error;
+import io.android.sbi.secureLib.DeviceKeystore;
+import io.android.sbi.utility.DeviceConstants;
 
 /**
  * @author NPrime Technologies
@@ -224,7 +224,7 @@ public class ClientActivity extends AppCompatActivity {
                     fOut.flush();
                     fOut.close();
 
-                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.mosip.t5mock.sbi.fileprovider", txtFile);
+                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.t5.sbi.fileprovider", txtFile);
                     Intent share = new Intent(Intent.ACTION_SEND);
                     share.setType("plain/*");
                     share.putExtra(Intent.EXTRA_STREAM, uri);
@@ -279,7 +279,7 @@ public class ClientActivity extends AppCompatActivity {
             if (isIntentSafe) {
                 String packageName = null;
                 for (ResolveInfo activity : activities) {
-                    if (activity.activityInfo.applicationInfo.packageName.equals("io.mosip.t5mock.sbi")) {
+                    if (activity.activityInfo.applicationInfo.packageName.equals("io.t5.sbi")) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();
@@ -365,7 +365,7 @@ public class ClientActivity extends AppCompatActivity {
                 bio.count = "0";
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = requestedScore;
-                // Echo the deviceId received from Info so it matches discover/info (MOSIP requirement).
+                // Echo the deviceId received from Info so it matches discover/info.
                 bio.deviceId = (deviceIdValue != null) ? deviceIdValue : serialNo;
                 bio.deviceSubId = "0";
                 bio.previousHash = "";
@@ -377,9 +377,9 @@ public class ClientActivity extends AppCompatActivity {
                     bio.exception = new String[0];
                 }
 
-                List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
-                mosipBioRequest.add(bio);
-                captureRequestDto.bio = mosipBioRequest;
+                List<CaptureRequestDeviceDetailDto> bioRequest = new ArrayList<>();
+                bioRequest.add(bio);
+                captureRequestDto.bio = bioRequest;
                 captureRequestDto.customOpts = null;
 
                 String packageName;
@@ -781,12 +781,6 @@ public class ClientActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return payLoad;
-    }
-
-    public void mosipSpecWebsite(View view) {
-        Intent updateIntent = new Intent(Intent.ACTION_VIEW);
-        updateIntent.setData(Uri.parse("https://docs.mosip.io/1.1.5/biometrics/mosip-device-service-specification"));
-        startActivity(updateIntent);
     }
 
     public void openSettings(View view) {

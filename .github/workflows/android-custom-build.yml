@@ -19,14 +19,13 @@ on:
       - master
       - 1.*
       - develop*
-      - MOSIP*
 
 jobs:
   build-camera-mds:
     uses: mosip/kattu/.github/workflows/npm-android-build.yml@master
     with:
-      SERVICE_LOCATION: 'MockAndroidSBI'
-      ANDROID_LOCATION: '../MockAndroidSBI'
+      SERVICE_LOCATION: 'android-sbi'
+      ANDROID_LOCATION: '../android-sbi'
       BUILD_ARTIFACT: 'camera-mds'
       GRADLEW_ARGS: 'assembleDebug'
     secrets:

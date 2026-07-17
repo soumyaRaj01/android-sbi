@@ -13,7 +13,7 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import io.mosip.mock.sbi.R;
+import io.android.sbi.R;
 
 /**
  * A simple {@link Fragment} subclass.

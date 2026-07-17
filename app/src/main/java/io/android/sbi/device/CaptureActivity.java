@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -184,6 +185,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
     @Override
     public void onFailure(String errorMessage) {
+        showErrorToast(errorMessage);
         captureFailed(CAPTURE_FAILURE_STATUS, errorMessage);
     }
 
@@ -256,6 +258,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
     @Override
     public void OnFaceCaptureFailed(String errorMessage) {
+        showErrorToast(errorMessage);
         captureFailed(CAPTURE_FAILURE_STATUS, errorMessage);
     }
 
@@ -302,5 +305,13 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         intent.putExtra("Quality", 0);
         setResult(Activity.RESULT_CANCELED, intent);
         finish();
+    }
+
+    private void showErrorToast(String errorMessage) {
+        if (errorMessage == null || errorMessage.trim().isEmpty()) {
+            return;
+        }
+        runOnUiThread(() ->
+                Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show());
     }
 }

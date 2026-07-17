@@ -132,25 +132,25 @@ public class MDServiceActivity extends AppCompatActivity {
                             case "Face":
                                 responseBody = discoverDevice(
                                         T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
-                                        szTs, "io.t5.sbi.face", DeviceConstants.BioType.Face);
+                                        szTs, "io.tech.sbi.face", DeviceConstants.BioType.Face);
                                 break;
                             case "Finger":
                                 responseBody = discoverDevice(
                                         T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus),
-                                        szTs, "io.t5.sbi.finger", DeviceConstants.BioType.Finger);
+                                        szTs, "io.tech.sbi.finger", DeviceConstants.BioType.Finger);
                                 break;
                             case "Iris":
-                                responseBody = discoverDevice(currentIrisStatus, szTs, "io.t5.sbi.iris",
+                                responseBody = discoverDevice(currentIrisStatus, szTs, "io.tech.sbi.iris",
                                         DeviceConstants.BioType.Iris);
                                 break;
                             case "Biometric Device":
                                 List<DiscoverDto> deviceList = new ArrayList<>();
                                 List<DiscoverDto> faceDevice = discoverDevice(
                                         T5FaceDeviceStatus.getFaceStatus(getApplicationContext(), currentFaceStatus),
-                                        szTs, "io.t5.sbi.face", DeviceConstants.BioType.Face);
+                                        szTs, "io.tech.sbi.face", DeviceConstants.BioType.Face);
                                 List<DiscoverDto> fingerDevice = discoverDevice(
                                         T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus),
-                                        szTs, "io.t5.sbi.finger", DeviceConstants.BioType.Finger);
+                                        szTs, "io.tech.sbi.finger", DeviceConstants.BioType.Finger);
                                 deviceList.addAll(faceDevice);
                                 deviceList.addAll(fingerDevice);
                                 responseBody = deviceList;
@@ -168,7 +168,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.t5.sbi.face.Info": {
+            case "io.tech.sbi.face.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
@@ -182,11 +182,11 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.t5.sbi.finger.Info": {
+            case "io.tech.sbi.finger.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
-                    String requestType = "io.t5.sbi.finger" + ".info";
+                    String requestType = "io.tech.sbi.finger" + ".info";
                     DeviceConstants.ServiceStatus fingerStatus =
                             T5DeviceStatus.getFingerStatus(getApplicationContext(), currentFingerStatus);
                     List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(fingerStatus, szTs, requestType, DeviceConstants.BioType.Finger);
@@ -196,11 +196,11 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.t5.sbi.iris.Info": {
+            case "io.tech.sbi.iris.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
-                    String requestType = "io.t5.sbi.iris" + ".info";
+                    String requestType = "io.tech.sbi.iris" + ".info";
                     List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentIrisStatus, szTs, requestType, DeviceConstants.BioType.Iris);
 
                     generateResponse(deviceInfo, false);
@@ -208,7 +208,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.t5.sbi.face.Capture": {
+            case "io.tech.sbi.face.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -220,7 +220,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.t5.sbi.finger.Capture": {
+            case "io.tech.sbi.finger.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -232,7 +232,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.t5.sbi.iris.Capture": {
+            case "io.tech.sbi.iris.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -404,7 +404,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 os.write(ob.writeValueAsBytes(captureResponse));
                 os.flush();
                 os.close();
-                Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "io.t5.sbi.fileprovider", file);
+                Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "io.tech.sbi.fileprovider", file);
                 getApplicationContext().grantUriPermission(getCallingPackage(), respUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intent.putExtra("response", respUri);
             } catch (final Exception e) {

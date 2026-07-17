@@ -224,7 +224,7 @@ public class ClientActivity extends AppCompatActivity {
                     fOut.flush();
                     fOut.close();
 
-                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.t5.sbi.fileprovider", txtFile);
+                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.tech.sbi.fileprovider", txtFile);
                     Intent share = new Intent(Intent.ACTION_SEND);
                     share.setType("plain/*");
                     share.putExtra(Intent.EXTRA_STREAM, uri);
@@ -279,7 +279,7 @@ public class ClientActivity extends AppCompatActivity {
             if (isIntentSafe) {
                 String packageName = null;
                 for (ResolveInfo activity : activities) {
-                    if (activity.activityInfo.applicationInfo.packageName.equals("io.t5.sbi")) {
+                    if (activity.activityInfo.applicationInfo.packageName.equals("io.tech.sbi")) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();

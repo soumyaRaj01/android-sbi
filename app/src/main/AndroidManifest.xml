@@ -41,12 +41,12 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="io.sbi.device" />
-                <action android:name="io.t5.sbi.face.Info" />
-                <action android:name="io.t5.sbi.face.Capture" />
-                <action android:name="io.t5.sbi.finger.Info" />
-                <action android:name="io.t5.sbi.finger.Capture" />
-                <action android:name="io.t5.sbi.iris.Info" />
-                <action android:name="io.t5.sbi.iris.Capture" />
+                <action android:name="io.tech.sbi.face.Info" />
+                <action android:name="io.tech.sbi.face.Capture" />
+                <action android:name="io.tech.sbi.finger.Info" />
+                <action android:name="io.tech.sbi.finger.Capture" />
+                <action android:name="io.tech.sbi.iris.Info" />
+                <action android:name="io.tech.sbi.iris.Capture" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -54,7 +54,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="io.t5.sbi.fileprovider"
+            android:authorities="io.tech.sbi.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true"
             android:readPermission="true">

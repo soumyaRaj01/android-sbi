@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -61,6 +62,8 @@ public class ConfigurationActivity extends AppCompatActivity {
     private int currentFaceResponseDelay;
     private int currentFingerResponseDelay;
     private int currentIrisResponseDelay;
+    private String currentDmsBaseUrl;
+    private EditText dmsBaseUrlInput;
 
     SharedPreferences sharedPreferences;
     DateUtil dateUtil;
@@ -71,6 +74,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_configuration);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         dateUtil = new DateUtil(this);
+        dmsBaseUrlInput = findViewById(R.id.dms_base_url_input);
 
         ArrayList<String> deviceUsage = new ArrayList<>();
         deviceUsage.add(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
@@ -97,6 +101,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentDeviceUsage = sharedPreferences.getString(DEVICE_USAGE, DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
+        currentDmsBaseUrl = sharedPreferences.getString(DMS_BASE_URL, DEFAULT_DMS_BASE_URL);
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         deviceKeyFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.deviceKeyFragment);
@@ -171,6 +176,11 @@ public class ConfigurationActivity extends AppCompatActivity {
         device_currentKeyPassword = deviceKeyFragment.getPassword();
         ftm_currentKeyAlias = ftmKeyFragment.getKeyAlias();
         ftm_currentKeyPassword = ftmKeyFragment.getPassword();
+        currentDmsBaseUrl = normalizeDmsBaseUrl(dmsBaseUrlInput.getText().toString());
+        if (currentDmsBaseUrl.isEmpty()) {
+            Toast.makeText(this, "DMS Base URL is required", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(DEVICE_KEY_ALIAS, device_currentKeyAlias);
@@ -190,6 +200,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(FINGER_RESPONSE_DELAY, currentFingerResponseDelay);
         editor.putInt(IRIS_RESPONSE_DELAY, currentIrisResponseDelay);
         editor.putString(DEVICE_USAGE, currentDeviceUsage);
+        editor.putString(DMS_BASE_URL, currentDmsBaseUrl);
 
         editor.apply();
 
@@ -208,6 +219,15 @@ public class ConfigurationActivity extends AppCompatActivity {
         ftmKeyFragment.setValues(ftm_currentKeyAlias, ftm_currentKeyPassword, ftm_lastUploadDate);
         if (idaFirCertificateFragment != null)
             idaFirCertificateFragment.resetSelection(idaFirCertificateLastUploadDate);
+        dmsBaseUrlInput.setText(currentDmsBaseUrl);
+    }
+
+    private String normalizeDmsBaseUrl(String url) {
+        String normalizedUrl = url == null ? "" : url.trim();
+        while (normalizedUrl.endsWith("/")) {
+            normalizedUrl = normalizedUrl.substring(0, normalizedUrl.length() - 1);
+        }
+        return normalizedUrl;
     }
 
     private boolean saveFile(Uri fileUri, String fileName) {

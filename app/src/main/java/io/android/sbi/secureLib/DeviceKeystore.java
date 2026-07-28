@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import io.android.sbi.crypto.AndroidKeystoreCryptoProvider;
+import io.android.sbi.crypto.CryptoProvider;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -42,6 +44,7 @@ public class DeviceKeystore {
     private final String ftm_keystorePwd;
     private final String ftm_keyAlias;
     SharedPreferences sharedPreferences;
+    CryptoProvider provider;
 
     private final static String AUTH_REQ_TEMPLATE = "{ \"id\": \"string\",\"metadata\": {},\"request\": { \"appId\": \"%s\", \"clientId\": \"%s\", \"secretKey\": \"%s\" }, \"requesttime\": \"%s\", \"version\": \"string\"}";
 
@@ -52,9 +55,16 @@ public class DeviceKeystore {
         device_keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
         ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
         ftm_keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
+        provider = new AndroidKeystoreCryptoProvider(context);
     }
 
     public String getJwt(byte[] data, boolean signWithFTMKey) {
+        try {
+            return provider.signData(data, signWithFTMKey);
+        } catch (Exception e) {
+            Logger.e(DeviceConstants.LOG_TAG, "getJwt: " + e.getMessage());
+        }
+
         String fileName;
         String keyAlias;
         String keystorePwd;
@@ -124,21 +134,27 @@ public class DeviceKeystore {
     }
 
     public boolean checkCertificateCredentials(String fileName, String keyAlias, String keystorePwd) {
-        PrivateKey privateKey;
-        Certificate x509Certificate;
-
-        File file = new File(context.getFilesDir(), fileName);
-
-        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(inputStream, keystorePwd.toCharArray());
-            privateKey = (PrivateKey) keystore.getKey(keyAlias, keystorePwd.toCharArray());
-            x509Certificate = keystore.getCertificate(keyAlias);
-            return privateKey != null && x509Certificate != null;
-        } catch (Exception e) {
-            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
-            return false;
+        if(ClientConstants.DEVICE_P12_FILE_NAME.equals(fileName)) {
+            return provider.hasDeviceCertificate();
+        } else{
+            return provider.hasFtmCertificate();
         }
+
+//        PrivateKey privateKey;
+//        Certificate x509Certificate;
+//
+//        File file = new File(context.getFilesDir(), fileName);
+//
+//        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+//            KeyStore keystore = KeyStore.getInstance("PKCS12");
+//            keystore.load(inputStream, keystorePwd.toCharArray());
+//            privateKey = (PrivateKey) keystore.getKey(keyAlias, keystorePwd.toCharArray());
+//            x509Certificate = keystore.getCertificate(keyAlias);
+//            return privateKey != null && x509Certificate != null;
+//        } catch (Exception e) {
+//            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
+//            return false;
+//        }
     }
 
     public Certificate getCertificateToEncryptCaptureBioValue() throws CertificateException {
@@ -208,7 +224,8 @@ public class DeviceKeystore {
     }
 
     public boolean isDeviceKeyAvailable() {
-        File file = new File(context.getFilesDir(), ClientConstants.DEVICE_P12_FILE_NAME);
-        return file.exists();
+        return provider.hasDeviceCertificate();
+//        File file = new File(context.getFilesDir(), ClientConstants.DEVICE_P12_FILE_NAME);
+//        return file.exists();
     }
 }

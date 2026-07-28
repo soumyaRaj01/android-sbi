@@ -78,6 +78,22 @@
                 android:layout_marginBottom="5dp"
                 android:background="?android:attr/listDivider" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/dms_config"
+                android:textColor="@color/primary"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/dms_base_url_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dms_base_url"
+                android:inputType="textUri"
+                android:singleLine="true" />
+
             <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">

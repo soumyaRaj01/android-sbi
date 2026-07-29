@@ -1,10 +1,11 @@
 package io.android.sbi.crypto;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
 import io.android.sbi.constants.ClientConstants;
-import io.android.sbi.utility.CommonDeviceAPI;
 import io.android.sbi.utility.Logger;
 import okhttp3.*;
 import org.json.JSONArray;
@@ -19,9 +20,8 @@ public class DmsClient {
 
     private final String baseUrl;
     private final SharedPreferences sharedPreferences;
-    private final CommonDeviceAPI devCommonDeviceAPI;
-
     private final OkHttpClient client;
+    private final Context context;
 
     private final CookieJar cookieJar = new CookieJar() {
         private List<Cookie> cookies = new ArrayList<>();
@@ -37,43 +37,14 @@ public class DmsClient {
         }
     };
 
-    public DmsClient(String baseUrl) {
-        this(baseUrl, null);
-    }
-
-    public DmsClient(String baseUrl, SharedPreferences sharedPreferences) {
-        this.baseUrl = baseUrl;
-        this.sharedPreferences = sharedPreferences;
-        devCommonDeviceAPI = new CommonDeviceAPI();
+    public DmsClient(Context context){
+        this.context = context.getApplicationContext();;
+        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.context);
+        this.baseUrl = sharedPreferences.getString(ClientConstants.DMS_BASE_URL, ClientConstants.DEFAULT_DMS_BASE_URL);
 
         client = new OkHttpClient.Builder()
                 .cookieJar(cookieJar)
                 .build();
-    }
-
-    public void authenticate(String username, String password) throws Exception {
-        try {
-            URL url = new URL(baseUrl + "/v2/api/Authenticate");
-
-            String requestBody = "{ \"request\": { " +
-                    "\"username\":\"" + username + "\"," +
-                    "\"password\":\"" + password + "\"" +
-                    "} }";
-
-            MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(mediaType, requestBody);
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .build();
-
-            Response response = client.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                Logger.e("", "Error authenticating to DMS");
-            }
-        } catch (Exception e) {
-            Logger.e("", "Error authenticating to DMS: " + e.getMessage());
-        }
     }
 
     public String generateSignedCertificate(
@@ -82,7 +53,7 @@ public class DmsClient {
             throws Exception {
         URL url = new URL(baseUrl + "/v2/api/GenerateSignedDeviceCertificate");
 
-        String serialNo = devCommonDeviceAPI.getSerialNumber();
+        String serialNo = getSerialNumber();
 
         String requestBody = "{ \"request\": {" +
                 "\"serialNum\":\"" + serialNo + "\"," +
@@ -136,7 +107,7 @@ public class DmsClient {
                     }
                 }
 
-                String serialNo = devCommonDeviceAPI.getSerialNumber();
+                String serialNo = getSerialNumber();
                 URL url = new URL(baseUrl + "/api/AddDeviceToken");
 
                 String requestBody = "{ \"request\": {" +
@@ -175,5 +146,9 @@ public class DmsClient {
                 Logger.e("", "Error storing token to DMS: " + e.getMessage());
             }
         });
+    }
+
+    private String getSerialNumber() {
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 }

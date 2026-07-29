@@ -3,6 +3,7 @@ package io.android.sbi.crypto;
 import io.android.sbi.utility.Logger;
 
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.Executors;
 
 public class ProvisioningManager {
 
@@ -52,15 +53,20 @@ public class ProvisioningManager {
         }
     }
 
-    public void rotateCertificate() throws Exception {
-        if (!cryptoProvider.hasDeviceKey()) {
-            cryptoProvider.generateDeviceKeyPair();
-        }
-
-        provisionDeviceCertificate();
+    public void rotateCertificate() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                if (!cryptoProvider.hasDeviceKey()) {
+                    cryptoProvider.generateDeviceKeyPair();
+                }
+                provisionDeviceCertificate();
+            } catch (Exception e) {
+                Logger.e("ProvisioningManager", "Error rotating certificate: " + e.getMessage());
+            }
+        });
     }
 
-    public void removeCertificate() throws Exception {
+    public void removeCertificate() {
         cryptoProvider.removeDeviceCertificate();
     }
 }

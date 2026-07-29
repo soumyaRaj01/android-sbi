@@ -52,4 +52,9 @@
     <string name="key_label">Key Label</string>
     <string name="export_ftm_key">Export FTM Key</string>
     <string name="export_device_key">Export Device Key</string>
+    <string name="check_now">Check Now</string>
+    <string name="key_status_not_provisioned">Status: Not provisioned yet</string>
+    <string name="key_status_present">Status: Certificate present</string>
+    <string name="issued_on">Issued On: %1$s</string>
+    <string name="expires_on">Expires On: %1$s</string>
 </resources>

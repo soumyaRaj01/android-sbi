@@ -1,6 +1,7 @@
 package io.android.sbi.crypto;
 
 import java.io.InputStream;
+import java.security.cert.X509Certificate;
 
 public interface CryptoProvider {
 
@@ -30,6 +31,10 @@ public interface CryptoProvider {
     boolean hasFtmCertificate();
 
     boolean hasDeviceCertificate();
+
+    X509Certificate getDeviceCertificate();
+
+    X509Certificate getFtmCertificate();
 
     void removeDeviceCertificate();
 }

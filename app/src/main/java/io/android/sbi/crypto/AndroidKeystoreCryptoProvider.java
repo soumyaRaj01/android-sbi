@@ -67,6 +67,16 @@ public class AndroidKeystoreCryptoProvider
     }
 
     @Override
+    public X509Certificate getDeviceCertificate() {
+        return safeLoadCertificate(CryptoConstants.DEVICE_CERT_FILE);
+    }
+
+    @Override
+    public X509Certificate getFtmCertificate() {
+        return safeLoadCertificate(CryptoConstants.FTM_CERT_FILE);
+    }
+
+    @Override
     public String generateFtmCSR() throws Exception {
         return generateCSR(
                 CryptoConstants.FTM_KEY_ALIAS,
@@ -241,17 +251,20 @@ public class AndroidKeystoreCryptoProvider
     }
 
     private boolean certificateExists(String fileName) {
+        return safeLoadCertificate(fileName) != null;
+    }
+
+    private X509Certificate safeLoadCertificate(String fileName) {
         File file = new File(context.getFilesDir(), fileName);
         if (!file.exists()) {
-            return false;
+            return null;
         }
 
         try {
-            loadCertificate(fileName);
-            return true;
+            return loadCertificate(fileName);
         } catch (Exception e) {
             Logger.e(DeviceConstants.LOG_TAG, "Invalid certificate " + fileName + ": " + e.getMessage());
-            return false;
+            return null;
         }
     }
 

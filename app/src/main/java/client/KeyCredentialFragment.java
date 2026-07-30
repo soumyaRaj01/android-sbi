@@ -83,14 +83,7 @@ public class KeyCredentialFragment extends Fragment {
     private void checkNow() {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                SharedPreferences sharedPreferences =
-                        PreferenceManager.getDefaultSharedPreferences(requireContext());
-
-                String dmsBaseUrl = sharedPreferences.getString(
-                        ClientConstants.DMS_BASE_URL,
-                        ClientConstants.DEFAULT_DMS_BASE_URL);
-
-                DmsClient dmsClient = new DmsClient(dmsBaseUrl);
+                DmsClient dmsClient = new DmsClient(requireContext());
                 ProvisioningManager provisioningManager =
                         new ProvisioningManager(cryptoProvider, dmsClient);
 

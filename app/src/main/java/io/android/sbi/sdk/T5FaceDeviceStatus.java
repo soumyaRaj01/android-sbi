@@ -12,7 +12,7 @@ import io.android.sbi.utility.DeviceConstants;
 
 public final class T5FaceDeviceStatus {
 
-    private static final long STATUS_TIMEOUT_SECONDS = 5;
+    private static final long STATUS_TIMEOUT_SECONDS = 10;
 
     private T5FaceDeviceStatus() {
     }

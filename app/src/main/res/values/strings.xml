@@ -1,16 +1,12 @@
 <resources>
     <string name="app_name">Android SBI</string>
     <string name="no_data_text">For testing, get Info and Capture results</string>
-    <string name="key_alias">Key Alias</string>
-    <string name="key_store_password">Key Store Password</string>
-    <string name="add_p12">Add P12</string>
     <string name="face_score">Face Score</string>
     <string name="finger_score">Finger Score</string>
     <string name="iris_score">Iris Score</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="reset">Reset</string>
-    <string name="last_upload">Last Upload</string>
     <string name="browse">Browse</string>
     <string name="p12_config">P12 Config</string>
     <string name="ida_fir_certificate_config">IDA_FIR Certificate Config</string>
@@ -30,8 +26,6 @@
     <string name="device_config">Device Config</string>
     <string name="authentication">Authentication</string>
     <string name="device_usage">Device Usage</string>
-    <string name="device_key">Device Key</string>
-    <string name="ftm_key">FTM Key</string>
     <string name="app_id">App Id</string>
     <string name="client_id">Client Id</string>
     <string name="secret_key">Secret Key</string>
@@ -47,11 +41,7 @@
     <string name="info">Info</string>
     <string name="discover">Discover</string>
     <string name="capture">Capture</string>
-    <string name="device_purpose_registration">Device Purpose: Registration</string>
-    <string name="device_purpose_auth">Device Purpose: Auth</string>
     <string name="key_label">Key Label</string>
-    <string name="export_ftm_key">Export FTM Key</string>
-    <string name="export_device_key">Export Device Key</string>
     <string name="check_now">Check Now</string>
     <string name="key_status_not_provisioned">Status: Not provisioned yet</string>
     <string name="key_status_present">Status: Certificate present</string>

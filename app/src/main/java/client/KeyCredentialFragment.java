@@ -1,9 +1,6 @@
 package client;
 
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +15,6 @@ import java.util.Locale;
 import java.util.concurrent.Executors;
 
 import io.android.sbi.R;
-import io.android.sbi.constants.ClientConstants;
 import io.android.sbi.crypto.AndroidKeystoreCryptoProvider;
 import io.android.sbi.crypto.CryptoProvider;
 import io.android.sbi.crypto.DmsClient;
@@ -37,8 +33,6 @@ public class KeyCredentialFragment extends Fragment {
 
     // the fragment initialization parameters
     public static final String ARG_KEY_LABEL = "keyLabel";
-    public static final String ARG_KEY_ALIAS = "keyAlias";
-    public static final String ARG_PASSWORD = "password";
 
     private static final SimpleDateFormat DATE_FORMAT =
             new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -113,25 +107,5 @@ public class KeyCredentialFragment extends Fragment {
         statusTextView.setText(R.string.key_status_present);
         issuedOnTextView.setText(getString(R.string.issued_on, DATE_FORMAT.format(certificate.getNotBefore())));
         expiresOnTextView.setText(getString(R.string.expires_on, DATE_FORMAT.format(certificate.getNotAfter())));
-    }
-
-    // Retained so ConfigurationActivity's existing Save/Reset handlers (built around
-    // the old manual P12 upload flow) keep compiling; the underlying alias/password/file
-    // views no longer exist in this layout now that certs are fetched automatically.
-    public String getKeyAlias() {
-        return "";
-    }
-
-    public String getPassword() {
-        return "";
-    }
-
-    public Uri getSelectedUri() {
-        return null;
-    }
-
-    public void setValues(String keyAlias, String password, String lastUpdated) {
-        // no-op: alias/password/file fields removed; certificate status is read
-        // directly from CryptoProvider in refreshStatus() instead.
     }
 }

@@ -10,24 +10,13 @@ public class SettingsPrefManager {
     // Preference keys (one per view)
     private static final String KEY_LIVENESS = "liveness";
     private static final String KEY_SHOW_ELLIPSES = "showEllipses";
-    private static final String KEY_CREATE_TEMPLATES = "createTemplates";
-    private static final String KEY_ORIENTATION = "orientation";
     private static final String KEY_SAVE_SDK_LOG = "saveSdkLog";
     private static final String KEY_PROPRIETARY_DENOISE = "proprietaryDenoise";
     private static final String KEY_CLEAN_FINGERPRINTS = "cleanFingerprints";
-    private static final String KEY_SAVE_FINGERPRINTS = "saveFingerprints";
     private static final String KEY_CAPTURE_SPEED_ID = "captureSpeedId";
-    private static final String KEY_DETECTOR_THRESHOLD = "detectorThreshold";
-    private static final String KEY_INDEX_FINGER = "indexFinger";
-    private static final String KEY_MIDDLE_FINGER = "middleFinger";
-    private static final String KEY_RING_FINGER = "ringFinger";
-    private static final String KEY_LITTLE_FINGER = "littleFinger";
 
     // Default values
-//    private static final boolean DEFAULT_TRUE = true;
-//    private static final boolean DEFAULT_FALSE = true;
     private static final int DEFAULT_RADIO_ID = 1;
-    private static final float DEFAULT_THRESHOLD = 0.9f;
 
     private SharedPreferences sharedPref;
 
@@ -60,20 +49,6 @@ public class SettingsPrefManager {
         sharedPref.edit().putBoolean(KEY_SHOW_ELLIPSES, value).apply();
     }
 
-//    public boolean isCreateTemplatesEnabled() {
-//        return sharedPref.getBoolean(KEY_CREATE_TEMPLATES, DEFAULT_FALSE);
-//    }
-//    public void setCreateTemplatesEnabled(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_CREATE_TEMPLATES, value).apply();
-//    }
-
-//    public boolean isOrientationEnabled() {
-//        return sharedPref.getBoolean(KEY_ORIENTATION, DEFAULT_FALSE);
-//    }
-//    public void setOrientationEnabled(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_ORIENTATION, value).apply();
-//    }
-
     public boolean isSaveSdkLogEnabled() {
         return sharedPref.getBoolean(KEY_SAVE_SDK_LOG, false);
     }
@@ -95,54 +70,12 @@ public class SettingsPrefManager {
         sharedPref.edit().putBoolean(KEY_CLEAN_FINGERPRINTS, value).apply();
     }
 
-//    public boolean isSaveFingerprintsEnabled() {
-//        return sharedPref.getBoolean(KEY_SAVE_FINGERPRINTS, true);
-//    }
-//    public void setSaveFingerprintsEnabled(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_SAVE_FINGERPRINTS, value).apply();
-//    }
-
     public int getCaptureSpeedId() {
         return sharedPref.getInt(KEY_CAPTURE_SPEED_ID, DEFAULT_RADIO_ID);
     }
     public void setCaptureSpeedId(int id) {
         sharedPref.edit().putInt(KEY_CAPTURE_SPEED_ID, id).apply();
     }
-
-//    public float getDetectorThreshold() {
-//        return sharedPref.getFloat(KEY_DETECTOR_THRESHOLD, DEFAULT_THRESHOLD);
-//    }
-//    public void setDetectorThreshold(float threshold) {
-//        sharedPref.edit().putFloat(KEY_DETECTOR_THRESHOLD, threshold).apply();
-//    }
-
-//    public boolean isIndexFingerChecked() {
-//        return sharedPref.getBoolean(KEY_INDEX_FINGER, DEFAULT_TRUE);
-//    }
-//    public void setIndexFingerChecked(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_INDEX_FINGER, value).apply();
-//    }
-//
-//    public boolean isMiddleFingerChecked() {
-//        return sharedPref.getBoolean(KEY_MIDDLE_FINGER, DEFAULT_TRUE);
-//    }
-//    public void setMiddleFingerChecked(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_MIDDLE_FINGER, value).apply();
-//    }
-//
-//    public boolean isRingFingerChecked() {
-//        return sharedPref.getBoolean(KEY_RING_FINGER, DEFAULT_TRUE);
-//    }
-//    public void setRingFingerChecked(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_RING_FINGER, value).apply();
-//    }
-//
-//    public boolean isLittleFingerChecked() {
-//        return sharedPref.getBoolean(KEY_LITTLE_FINGER, DEFAULT_TRUE);
-//    }
-//    public void setLittleFingerChecked(boolean value) {
-//        sharedPref.edit().putBoolean(KEY_LITTLE_FINGER, value).apply();
-//    }
 
     // New keys
     private static final String KEY_GET_FINGER_REVERSE = "finger_reverse";
@@ -154,7 +87,6 @@ public class SettingsPrefManager {
     // Default values
     private static final boolean DEFAULT_GET_QUALITY = true;
     private static final boolean DEFAULT_GET_NFIQ2_QUALITY = false;
-//    private static final int DEFAULT_CAPTURE_MODE_ID = R.id.rad_btn_cap_mode_self;  // default capture mode
 private static final int DEFAULT_CAPTURE_MODE_ID = 0;  // default capture mode
 
     // New getter/setter for checkboxes

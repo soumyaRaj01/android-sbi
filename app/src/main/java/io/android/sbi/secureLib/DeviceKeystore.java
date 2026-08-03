@@ -117,44 +117,12 @@ public class DeviceKeystore {
         return jwsToken;
     }
 
-    public String getCertificateDetails(String fileName, String keyAlias, String keystorePwd) {
-        Certificate x509Certificate;
-
-        File file = new File(context.getFilesDir(), fileName);
-
-        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(inputStream, keystorePwd.toCharArray());
-            x509Certificate = keystore.getCertificate(keyAlias);
-            return x509Certificate.toString();
-        } catch (Exception e) {
-            Logger.e(DeviceConstants.LOG_TAG, "getCertificateDetails: " + e.getMessage());
-            return "Failed to export certificate.";
-        }
-    }
-
     public boolean checkCertificateCredentials(String fileName, String keyAlias, String keystorePwd) {
         if(ClientConstants.DEVICE_P12_FILE_NAME.equals(fileName)) {
             return provider.hasDeviceCertificate();
         } else{
             return provider.hasFtmCertificate();
         }
-
-//        PrivateKey privateKey;
-//        Certificate x509Certificate;
-//
-//        File file = new File(context.getFilesDir(), fileName);
-//
-//        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
-//            KeyStore keystore = KeyStore.getInstance("PKCS12");
-//            keystore.load(inputStream, keystorePwd.toCharArray());
-//            privateKey = (PrivateKey) keystore.getKey(keyAlias, keystorePwd.toCharArray());
-//            x509Certificate = keystore.getCertificate(keyAlias);
-//            return privateKey != null && x509Certificate != null;
-//        } catch (Exception e) {
-//            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
-//            return false;
-//        }
     }
 
     public Certificate getCertificateToEncryptCaptureBioValue() throws CertificateException {
@@ -188,10 +156,6 @@ public class DeviceKeystore {
                 loadCertificateFromFile(ClientConstants.IDA_FIR_CERTIFICATE_FILE_NAME);
             }
 
-//            String certificateStr = getCertificateFromIDA();
-//            SharedPreferences.Editor editor = sharedPreferences.edit();
-//            editor.putString(CERTIFICATE_TO_ENCRYPT_BIO, certificateStr);
-//            editor.apply();
             onLoadCompleted.run();
         }).start();
     }
@@ -204,11 +168,6 @@ public class DeviceKeystore {
         editor.putString(CERTIFICATE_TO_ENCRYPT_BIO, certificateStr);
         editor.apply();
         return true;
-    }
-
-    private String getCertificateFromIDA() {
-        String certificate = "-----BEGIN CERTIFICATE-----\\nMIIDrDCCApSgAwIBAgIIu9HLpOIUyHIwDQYJKoZIhvcNAQELBQAwdjELMAkGA1UE\\nBhMCSU4xCzAJBgNVBAgMAktBMRIwEAYDVQQHDAlCQU5HQUxPUkUxDTALBgNVBAoM\\nBElJVEIxIDAeBgNVBAsMF01PU0lQLVRFQ0gtQ0VOVEVSIChJREEpMRUwEwYDVQQD\\nDAx3d3cubW9zaXAuaW8wHhcNMjYwMjA1MTg0MDQxWhcNMjgwMjA1MTg0MDQxWjB1\\nMQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExEjAQBgNVBAcMCUJBTkdBTE9SRTEN\\nMAsGA1UECgwESUlUQjEgMB4GA1UECwwXTU9TSVAtVEVDSC1DRU5URVIgKElEQSkx\\nFDASBgNVBAMMC0lEQS1JREEtRklSMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\\nCgKCAQEAkwgtsu37JXJuo08rlLiy/O7M6enfkf6dh+wIis2lH3ewmfeMUUMxQAAc\\nvJTxOqJ+A3f60tQC1JeAFY+rIESA1E+WfNiF00273nM0xvySyT++AFda7etYJEVa\\nPmW/6uIBarOSo6nCThPVsBIPlKcilwQB5sONbsIdhDf/wfet8J+TVnh+ZAiXoyU0\\n5DyIMBDf1ed7oml2FYAVvbElWsS29L7QhsNGMIb1T3+R8UjjKsqBj1WL2nLCM/CF\\nUttG4JGrS1KWSMqFNwxZxg4JZdyeI9A+ovKke2GsbpA5ZSVMfUPq6xgpa5b1rHm9\\njG+C48KPHMh0jzF60PKiePygK6++cwIDAQABoz8wPTAMBgNVHRMBAf8EAjAAMB0G\\nA1UdDgQWBBR33+K1I+kwChX/8P8EJUl89PgSPDAOBgNVHQ8BAf8EBAMCBSAwDQYJ\\nKoZIhvcNAQELBQADggEBAJ/68JveITrve8HVruKjlXnV/6YDe8DJPV0A012JyJzu\\nVdGCVHlQBQRFpgRb9q5qD4rO3ndWtaVDP4hl5fzsb7UFSVW0UYjBBXV9MfLxKVUr\\nLqVgbuO+sT6shccN2VwcDBivvyjRDVQWyeR9F3rMOHFPpaD2QSwyW7m36UXIVf5P\\nFQd5bC6v8H6WIPEFAYQb7Irr0h9Cy19HTaOfourW2gTmvZ67lw5gBqvteE5l51NL\\n++BO6YLO5dgGHp4FXMNrnnRbsAllCmO2U3Ac/YBVfeiX1zwcAmLisbr8Ume8+KJJ\\n0WduJCWqL4o0dgj64bHBJxE+ylHTjQRYW9Zs2Y+/H9M=\\n-----END CERTIFICATE-----\\n";
-        return certificate;
     }
 
     private static String trimBeginEnd(String pKey) {
@@ -225,7 +184,5 @@ public class DeviceKeystore {
 
     public boolean isDeviceKeyAvailable() {
         return provider.hasDeviceCertificate();
-//        File file = new File(context.getFilesDir(), ClientConstants.DEVICE_P12_FILE_NAME);
-//        return file.exists();
     }
 }

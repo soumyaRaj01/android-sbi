@@ -86,9 +86,8 @@ public class ClientActivity extends AppCompatActivity {
     private static final int HANDLER_DISPLAY_PROGRESS_BAR_SCREEN = 4;
 
 
-    MaterialButton btnInfo, btnRCapture, btnDiscover, btnCapture, btnDeviceKeyExport, btnFTMKeyExport;
+    MaterialButton btnInfo, btnDiscover, btnCapture;
     MaterialTextView textBox, manufacturer, modelId, deviceId, deviceStatus, textBoxLabel;
-    TextView devicePurposeTextView;
     ImageButton btnShareResponse;
     Spinner deviceTypeSpinner;
     EditText timeoutInput, scoreInput;
@@ -113,13 +112,9 @@ public class ClientActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
-        devicePurposeTextView = null;
         btnInfo = findViewById(R.id.info);
-        btnRCapture = null;
         btnDiscover = findViewById(R.id.discover);
         btnCapture = findViewById(R.id.capture);
-        btnDeviceKeyExport = null;
-        btnFTMKeyExport = null;
         textBoxLabel = findViewById(R.id.response_label);
         textBox = findViewById(R.id.textbox);
         manufacturer = findViewById(R.id.manufacturer);
@@ -170,12 +165,6 @@ public class ClientActivity extends AppCompatActivity {
             }
         });
 
-        if (btnRCapture != null) {
-            btnRCapture.setOnClickListener(view -> {
-                textBox.setText("");
-                capture(".rCapture", REQUEST_REG_CAPTURE, (FingerInput) null);
-            });
-        }
 
 
         btnDiscover.setOnClickListener(view -> {
@@ -192,23 +181,6 @@ public class ClientActivity extends AppCompatActivity {
             }
         });
 
-        if (btnDeviceKeyExport != null) {
-            btnDeviceKeyExport.setOnClickListener(view -> {
-                textBox.setText("");
-                String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
-                String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
-                exportCertificate(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd);
-            });
-        }
-
-        if (btnFTMKeyExport != null) {
-            btnFTMKeyExport.setOnClickListener(view -> {
-                textBox.setText("");
-                String keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
-                String keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
-                exportCertificate(ClientConstants.FTM_P12_FILE_NAME, keyAlias, keystorePwd);
-            });
-        }
 
         btnShareResponse.setOnClickListener(view -> {
             try {
@@ -242,21 +214,8 @@ public class ClientActivity extends AppCompatActivity {
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
                 , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
 
-        if (DeviceConstants.DeviceUsage.Registration.getDeviceUsage().equalsIgnoreCase(deviceUsage)) {
-            if (devicePurposeTextView != null) {
-                devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_registration));
-            }
-            if (btnRCapture != null) {
-                btnRCapture.setEnabled(appID != null);
-            }
-        } else {
-            if (devicePurposeTextView != null) {
-                devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_auth));
-            }
+        if (!DeviceConstants.DeviceUsage.Registration.getDeviceUsage().equalsIgnoreCase(deviceUsage)) {
             btnCapture.setEnabled(appID != null);
-            if (btnRCapture != null) {
-                btnRCapture.setEnabled(false);
-            }
         }
     }
 
@@ -561,9 +520,6 @@ public class ClientActivity extends AppCompatActivity {
         deviceTypeRow.setVisibility(View.GONE);
         btnInfo.setEnabled(false);
         btnCapture.setEnabled(false);
-        if (btnRCapture != null) {
-            btnRCapture.setEnabled(false);
-        }
     }
 
     private void updateSelectedDevice(DiscoverDto device) throws Exception {
@@ -817,18 +773,13 @@ public class ClientActivity extends AppCompatActivity {
     private void validateCertificates() {
         DeviceKeystore keystore = new DeviceKeystore(this);
 
-        String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
-        String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
-        String ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
-        String ftm_keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
-
-        if (keystore.checkCertificateCredentials(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd)) {
+        if (keystore.checkCertificateCredentials(ClientConstants.DEVICE_P12_FILE_NAME, "", "")) {
             Toast.makeText(this, "Device key credentials are valid.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Device key validation failed.", Toast.LENGTH_SHORT).show();
         }
 
-        if (keystore.checkCertificateCredentials(ClientConstants.FTM_P12_FILE_NAME, ftm_keyAlias, ftm_keystorePwd)) {
+        if (keystore.checkCertificateCredentials(ClientConstants.FTM_P12_FILE_NAME, "", "")) {
             Toast.makeText(this, "FTM key credentials are valid.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "FTM key validation failed.", Toast.LENGTH_SHORT).show();
@@ -847,10 +798,4 @@ public class ClientActivity extends AppCompatActivity {
         });
     }
 
-    private void exportCertificate(String fileName, String keyAlias, String password) {
-        DeviceKeystore keystore = new DeviceKeystore(this);
-        String details = keystore.getCertificateDetails(fileName, keyAlias, password);
-        showResponse("Certificate details", details);
-        responseData = details;
-    }
 }

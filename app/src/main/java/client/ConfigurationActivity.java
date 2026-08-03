@@ -1,9 +1,7 @@
 package client;
 
 import static client.FileChooserFragment.ARG_LAST_UPLOAD_DATE;
-import static client.KeyCredentialFragment.ARG_KEY_ALIAS;
 import static client.KeyCredentialFragment.ARG_KEY_LABEL;
-import static client.KeyCredentialFragment.ARG_PASSWORD;
 import static client.KeyCredentialFragment.KEY_TYPE_DEVICE;
 import static client.KeyCredentialFragment.KEY_TYPE_FTM;
 import static io.android.sbi.constants.ClientConstants.*;
@@ -45,15 +43,9 @@ public class ConfigurationActivity extends AppCompatActivity {
     private KeyCredentialFragment ftmKeyFragment;
     private FileChooserFragment idaFirCertificateFragment;
 
-    private String device_currentKeyAlias;
-    private String device_currentKeyPassword;
-    private String ftm_currentKeyAlias;
-    private String ftm_currentKeyPassword;
     private int currentFaceScore;
     private int currentFingerScore;
     private int currentIrisScore;
-    private String device_lastUploadDate;
-    private String ftm_lastUploadDate;
     private String idaFirCertificateLastUploadDate;
     private String currentFaceDeviceStatus;
     private String currentFingerDeviceStatus;
@@ -84,15 +76,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         deviceUsageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         //default values
-        device_currentKeyAlias = sharedPreferences.getString(DEVICE_KEY_ALIAS, "");
-        device_currentKeyPassword = sharedPreferences.getString(DEVICE_KEY_STORE_PASSWORD, "");
-        ftm_currentKeyAlias = sharedPreferences.getString(FTM_KEY_ALIAS, "");
-        ftm_currentKeyPassword = sharedPreferences.getString(FTM_KEY_STORE_PASSWORD, "");
         currentFaceScore = sharedPreferences.getInt(FACE_SCORE, 30);
         currentFingerScore = sharedPreferences.getInt(FINGER_SCORE, 30);
         currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
-        device_lastUploadDate = sharedPreferences.getString(DEVICE_LAST_UPLOAD_DATE, "");
-        ftm_lastUploadDate = sharedPreferences.getString(FTM_LAST_UPLOAD_DATE, "");
         idaFirCertificateLastUploadDate = sharedPreferences.getString(IDA_FIR_CERTIFICATE_LAST_UPLOAD_DATE, "");
         currentFaceDeviceStatus = sharedPreferences.getString(FACE_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
         currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
@@ -109,9 +95,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         if (deviceKeyFragment != null) {
             Bundle bundle = new Bundle();
             bundle.putString(ARG_KEY_LABEL, KEY_TYPE_DEVICE);
-            bundle.putString(ARG_KEY_ALIAS, device_currentKeyAlias);
-            bundle.putString(ARG_PASSWORD, device_currentKeyPassword);
-            bundle.putString(ARG_LAST_UPLOAD_DATE, device_lastUploadDate);
             deviceKeyFragment.setArguments(bundle);
         }
 
@@ -120,9 +103,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         if (ftmKeyFragment != null) {
             Bundle bundle = new Bundle();
             bundle.putString(ARG_KEY_LABEL, KEY_TYPE_FTM);
-            bundle.putString(ARG_KEY_ALIAS, ftm_currentKeyAlias);
-            bundle.putString(ARG_PASSWORD, ftm_currentKeyPassword);
-            bundle.putString(ARG_LAST_UPLOAD_DATE, ftm_lastUploadDate);
             ftmKeyFragment.setArguments(bundle);
         }
 
@@ -138,24 +118,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     public void onSave(View view) {
-//        Uri device_fileUri = device_fileChooserFragment.getSelectedUri();
-        Uri device_fileUri = deviceKeyFragment.getSelectedUri();
-        Uri ftm_fileUri = ftmKeyFragment.getSelectedUri();
         Uri idaFirCertificateUri = idaFirCertificateFragment != null ? idaFirCertificateFragment.getSelectedUri() : null;
-
-        if (device_fileUri != null && !saveFile(device_fileUri, ClientConstants.DEVICE_P12_FILE_NAME)) {
-            Toast.makeText(this, "Failed to save reg p.12 file! Please try again.", Toast.LENGTH_LONG).show();
-            return;
-        } else {
-            device_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
-        }
-
-        if (ftm_fileUri != null && !saveFile(ftm_fileUri, ClientConstants.FTM_P12_FILE_NAME)) {
-            Toast.makeText(this, "Failed to save auth p.12 file! Please try again.", Toast.LENGTH_LONG).show();
-            return;
-        } else {
-            ftm_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
-        }
 
         if (idaFirCertificateUri != null) {
             if (!saveFile(idaFirCertificateUri, ClientConstants.IDA_FIR_CERTIFICATE_FILE_NAME)) {
@@ -172,10 +135,6 @@ public class ConfigurationActivity extends AppCompatActivity {
             idaFirCertificateLastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
         }
 
-        device_currentKeyAlias = deviceKeyFragment.getKeyAlias();
-        device_currentKeyPassword = deviceKeyFragment.getPassword();
-        ftm_currentKeyAlias = ftmKeyFragment.getKeyAlias();
-        ftm_currentKeyPassword = ftmKeyFragment.getPassword();
         currentDmsBaseUrl = normalizeDmsBaseUrl(dmsBaseUrlInput.getText().toString());
         if (currentDmsBaseUrl.isEmpty()) {
             Toast.makeText(this, "DMS Base URL is required", Toast.LENGTH_LONG).show();
@@ -183,15 +142,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(DEVICE_KEY_ALIAS, device_currentKeyAlias);
-        editor.putString(DEVICE_KEY_STORE_PASSWORD, device_currentKeyPassword);
-        editor.putString(FTM_KEY_ALIAS, ftm_currentKeyAlias);
-        editor.putString(FTM_KEY_STORE_PASSWORD, ftm_currentKeyPassword);
         editor.putInt(FACE_SCORE, currentFaceScore);
         editor.putInt(FINGER_SCORE, currentFingerScore);
         editor.putInt(IRIS_SCORE, currentIrisScore);
-        editor.putString(DEVICE_LAST_UPLOAD_DATE, LAST_UPDATE + device_lastUploadDate);
-        editor.putString(FTM_LAST_UPLOAD_DATE, LAST_UPDATE + ftm_lastUploadDate);
         editor.putString(IDA_FIR_CERTIFICATE_LAST_UPLOAD_DATE, LAST_UPDATE + idaFirCertificateLastUploadDate);
         editor.putString(FACE_DEVICE_STATUS, currentFaceDeviceStatus);
         editor.putString(FINGER_DEVICE_STATUS, currentFingerDeviceStatus);
@@ -215,8 +168,6 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     private void resetScreen() {
-        deviceKeyFragment.setValues(device_currentKeyAlias, device_currentKeyPassword, device_lastUploadDate);
-        ftmKeyFragment.setValues(ftm_currentKeyAlias, ftm_currentKeyPassword, ftm_lastUploadDate);
         if (idaFirCertificateFragment != null)
             idaFirCertificateFragment.resetSelection(idaFirCertificateLastUploadDate);
         dmsBaseUrlInput.setText(currentDmsBaseUrl);
@@ -248,18 +199,13 @@ public class ConfigurationActivity extends AppCompatActivity {
     private void loadAndValidateCertificates() {
         DeviceKeystore keystore = new DeviceKeystore(this);
 
-        String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
-        String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
-        String ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
-        String ftm_keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
-
-        if (keystore.checkCertificateCredentials(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd)) {
+        if (keystore.checkCertificateCredentials(ClientConstants.DEVICE_P12_FILE_NAME, "", "")) {
             Toast.makeText(this, "Device key credentials are valid.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Device key validation failed.", Toast.LENGTH_SHORT).show();
         }
 
-        if (keystore.checkCertificateCredentials(ClientConstants.FTM_P12_FILE_NAME, ftm_keyAlias, ftm_keystorePwd)) {
+        if (keystore.checkCertificateCredentials(ClientConstants.FTM_P12_FILE_NAME, "", "")) {
             Toast.makeText(this, "FTM key credentials are valid.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "FTM key validation failed.", Toast.LENGTH_SHORT).show();

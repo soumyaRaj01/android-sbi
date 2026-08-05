@@ -53,22 +53,12 @@
                 android:textColor="@color/primary"
                 android:textSize="18sp" />
 
-            <LinearLayout
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/idaCertFragment"
+                android:name="client.KeyCredentialFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/custom_border"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/idaFirCertificateFragment"
-                    android:name="client.FileChooserFragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:layout="@layout/fragment_file_chooser" />
-            </LinearLayout>
+                tools:layout="@layout/fragment_key_credential" />
 
             <View
                 android:id="@+id/divider2"

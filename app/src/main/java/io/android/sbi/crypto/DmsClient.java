@@ -91,6 +91,38 @@ public class DmsClient {
         return certificate;
     }
 
+    public String fetchIdaCertificate() throws Exception {
+        URL url = new URL(baseUrl + "/v2/api/CertStore/IDA");
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new Exception("DMS IDA certificate request failed with HTTP " + response.code());
+        }
+
+        if (response.body() == null) {
+            throw new Exception("DMS IDA certificate response body is empty");
+        }
+
+        JSONObject jsonObject = new JSONObject(response.body().string());
+        JSONArray errors = jsonObject.optJSONArray("errors");
+        if (errors != null && errors.length() > 0) {
+            throw new Exception("DMS IDA certificate request returned errors: " + errors);
+        }
+
+        JSONObject certEntry = jsonObject.optJSONObject("response");
+        String certificate = certEntry != null ? certEntry.optString("certValue", "") : "";
+        if (certificate.isEmpty()) {
+            throw new Exception("DMS IDA certificate response is missing");
+        }
+
+        return certificate;
+    }
+
     public void sendTokenToDmsServer(String token) {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {

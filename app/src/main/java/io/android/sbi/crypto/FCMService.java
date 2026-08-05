@@ -3,6 +3,7 @@ package io.android.sbi.crypto;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import io.android.sbi.secureLib.DeviceKeystore;
 import io.android.sbi.utility.DeviceConstants;
 import io.android.sbi.utility.Logger;
 
@@ -17,7 +18,8 @@ public class FCMService extends FirebaseMessagingService {
 
         CryptoProvider cryptoProvider = new AndroidKeystoreCryptoProvider(getApplicationContext());
         this.dmsClient = new DmsClient(getApplicationContext());
-        this.provisioningManager = new ProvisioningManager(cryptoProvider, dmsClient);
+        DeviceKeystore deviceKeystore = new DeviceKeystore(getApplicationContext());
+        this.provisioningManager = new ProvisioningManager(cryptoProvider, dmsClient, deviceKeystore);
     }
 
     @Override
@@ -35,6 +37,12 @@ public class FCMService extends FirebaseMessagingService {
                     provisioningManager.removeCertificate();
                 } catch (Exception e) {
                     Logger.e(DeviceConstants.LOG_TAG, "Error during certificate removal in background push" + e);
+                }
+            } else if ("REMOVE_IDA_CERT".equals(action)) {
+                try {
+                    provisioningManager.removeIdaCertificate();
+                } catch (Exception e) {
+                    Logger.e(DeviceConstants.LOG_TAG, "Error during IDA certificate removal in background push" + e);
                 }
             }
         }

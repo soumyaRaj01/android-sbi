@@ -5,6 +5,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.concurrent.Executors;
 
+import io.android.sbi.secureLib.DeviceKeystore;
 import io.android.sbi.utility.DeviceConstants;
 import io.android.sbi.utility.Logger;
 
@@ -19,7 +20,8 @@ public class CryptoApplication extends Application {
                     try {
                         CryptoProvider cryptoProvider = new AndroidKeystoreCryptoProvider(getApplicationContext());
                         DmsClient dmsClient = new DmsClient(getApplicationContext());
-                        ProvisioningManager provisioningManager = new ProvisioningManager(cryptoProvider, dmsClient);
+                        DeviceKeystore deviceKeystore = new DeviceKeystore(getApplicationContext());
+                        ProvisioningManager provisioningManager = new ProvisioningManager(cryptoProvider, dmsClient, deviceKeystore);
                         provisioningManager.initialize();
                     } catch (Exception e) {
                         Logger.e(DeviceConstants.LOG_TAG, "Error while key provisioning" +  e.getMessage());

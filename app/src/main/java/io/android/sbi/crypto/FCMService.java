@@ -46,7 +46,7 @@ public class FCMService extends FirebaseMessagingService {
     @Override
     public void onNewToken(String token) {
         super.onNewToken(token);
-        Logger.d(DeviceConstants.LOG_TAG, "New FCM Registration Token: " + token);
+        Logger.d(DeviceConstants.LOG_TAG, "New FCM Token generated");
         dmsClient.sendTokenToDmsServer(token);
     }
 }

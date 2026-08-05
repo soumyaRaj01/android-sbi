@@ -9,6 +9,7 @@ import ai.tech5.pheonix.capture.controller.DeviceStatus;
 import ai.tech5.pheonix.capture.controller.FaceCaptureController;
 
 import io.android.sbi.utility.DeviceConstants;
+import io.android.sbi.utility.Logger;
 
 public final class T5FaceDeviceStatus {
 
@@ -42,6 +43,7 @@ public final class T5FaceDeviceStatus {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
             FaceCaptureController.getInstance().getDeviceStatus(ctx, "", status -> {
+                Logger.i("T5FaceDeviceStatus", "Face: status = " + status);
                 result[0] = status;
                 latch.countDown();
             });
@@ -49,6 +51,8 @@ public final class T5FaceDeviceStatus {
         } catch (Exception ignore) {
             // fall through - null result maps to NOT_READY
         }
+
+        Logger.i("T5FaceDeviceStatus", "Face: final status = " + result[0]);
         return result[0];
     }
 }

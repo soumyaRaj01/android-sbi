@@ -2,4 +2,6 @@
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <files-path name="output" path="output/"/>
     <files-path name="files" path="."/>
+
+    <cache-path name="app_test_logs" path="." />
 </paths>

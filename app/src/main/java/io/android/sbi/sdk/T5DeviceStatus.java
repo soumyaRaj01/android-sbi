@@ -9,6 +9,7 @@ import ai.tech5.finger.utils.DeviceStatus;
 import ai.tech5.finger.utils.T5FingerCaptureController;
 
 import io.android.sbi.utility.DeviceConstants;
+import io.android.sbi.utility.Logger;
 
 public final class T5DeviceStatus {
 
@@ -50,6 +51,7 @@ public final class T5DeviceStatus {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
             T5FingerCaptureController.getInstance().getDeviceStatus(ctx, status -> {
+                Logger.i("T5DeviceStatus", "Finger: status = " + status);
                 result[0] = status;
                 latch.countDown();
             });
@@ -57,6 +59,8 @@ public final class T5DeviceStatus {
         } catch (Exception ignore) {
             // fall through - null result maps to NOT_READY
         }
+
+        Logger.i("T5FaceDeviceStatus", "Finger: final status = " + result[0]);
         return result[0];
     }
 }

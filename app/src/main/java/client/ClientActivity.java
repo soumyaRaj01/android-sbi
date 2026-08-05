@@ -15,14 +15,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.Spinner;
-import android.widget.TableRow;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +32,7 @@ import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
+import io.android.sbi.log.LogExporter;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -85,6 +79,9 @@ public class ClientActivity extends AppCompatActivity {
     private static final int HANDLER_DISPLAY_INFO_RESPONSE = 3;
     private static final int HANDLER_DISPLAY_PROGRESS_BAR_SCREEN = 4;
 
+    private int clickCount = 0;
+    private long lastClickTime = 0;
+    private static final int MAX_TIME_GAP = 2000;
 
     MaterialButton btnInfo, btnDiscover, btnCapture;
     MaterialTextView textBox, manufacturer, modelId, deviceId, deviceStatus, textBoxLabel;
@@ -208,6 +205,25 @@ public class ClientActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+
+        ImageView logo = findViewById(R.id.logo);
+        logo.setOnClickListener(v -> {
+            long currentTime = System.currentTimeMillis();
+
+            if (currentTime - lastClickTime > MAX_TIME_GAP) {
+                clickCount = 1;
+            } else {
+                clickCount++;
+            }
+
+            lastClickTime = currentTime;
+
+            if (clickCount == 5) {
+                exportAppLogs();
+                clickCount = 0;
+            }
+        });
+
     }
 
     private void initViews() {
@@ -740,6 +756,10 @@ public class ClientActivity extends AppCompatActivity {
     public void openSettings(View view) {
         Intent intent = new Intent(this, ConfigurationActivity.class);
         startActivity(intent);
+    }
+
+    public void exportAppLogs() {
+        LogExporter.shareAppLogs(this);
     }
 
     public void askPermissionAndValidateCertificates(View view) {

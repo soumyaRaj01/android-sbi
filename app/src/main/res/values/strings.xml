@@ -7,8 +7,8 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="reset">Reset</string>
-    <string name="p12_config">P12 Config</string>
-    <string name="ida_fir_certificate_config">IDA_FIR Certificate Config</string>
+    <string name="keys_config">Keys</string>
+    <string name="ida_fir_certificate_config">IDA_FIR Certificate</string>
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
     <string name="face">Face</string>

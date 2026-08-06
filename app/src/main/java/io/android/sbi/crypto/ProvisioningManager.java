@@ -82,8 +82,12 @@ public class ProvisioningManager {
         });
     }
 
-    public void removeCertificate() {
+    public void removeDeviceCertificate() {
         cryptoProvider.removeDeviceCertificate();
+    }
+
+    public void removeFtmCertificate() {
+        cryptoProvider.removeFtmCertificate();
     }
 
     public void removeIdaCertificate() {

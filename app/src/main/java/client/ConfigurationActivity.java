@@ -46,7 +46,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     private int currentFaceResponseDelay;
     private int currentFingerResponseDelay;
     private int currentIrisResponseDelay;
-    private String currentDmsBaseUrl;
+//    private String currentDmsBaseUrl;
     private EditText dmsBaseUrlInput;
 
     SharedPreferences sharedPreferences;
@@ -56,7 +56,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        dmsBaseUrlInput = findViewById(R.id.dms_base_url_input);
+//        dmsBaseUrlInput = findViewById(R.id.dms_base_url_input);
 
         ArrayList<String> deviceUsage = new ArrayList<>();
         deviceUsage.add(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
@@ -76,7 +76,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentDeviceUsage = sharedPreferences.getString(DEVICE_USAGE, DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
-        currentDmsBaseUrl = sharedPreferences.getString(DMS_BASE_URL, DEFAULT_DMS_BASE_URL);
+//        currentDmsBaseUrl = sharedPreferences.getString(DMS_BASE_URL, DEFAULT_DMS_BASE_URL);
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         deviceKeyFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.deviceKeyFragment);
@@ -107,11 +107,11 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     public void onSave(View view) {
-        currentDmsBaseUrl = normalizeDmsBaseUrl(dmsBaseUrlInput.getText().toString());
-        if (currentDmsBaseUrl.isEmpty()) {
-            Toast.makeText(this, "DMS Base URL is required", Toast.LENGTH_LONG).show();
-            return;
-        }
+//        currentDmsBaseUrl = normalizeDmsBaseUrl(dmsBaseUrlInput.getText().toString());
+//        if (currentDmsBaseUrl.isEmpty()) {
+//            Toast.makeText(this, "DMS Base URL is required", Toast.LENGTH_LONG).show();
+//            return;
+//        }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(FACE_SCORE, currentFaceScore);
@@ -124,7 +124,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(FINGER_RESPONSE_DELAY, currentFingerResponseDelay);
         editor.putInt(IRIS_RESPONSE_DELAY, currentIrisResponseDelay);
         editor.putString(DEVICE_USAGE, currentDeviceUsage);
-        editor.putString(DMS_BASE_URL, currentDmsBaseUrl);
+//        editor.putString(DMS_BASE_URL, currentDmsBaseUrl);
 
         editor.apply();
 
@@ -139,7 +139,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     private void resetScreen() {
-        dmsBaseUrlInput.setText(currentDmsBaseUrl);
+//        dmsBaseUrlInput.setText(currentDmsBaseUrl);
     }
 
     private String normalizeDmsBaseUrl(String url) {

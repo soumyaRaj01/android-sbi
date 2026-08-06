@@ -32,11 +32,17 @@ public class FCMService extends FirebaseMessagingService {
 
             if ("RENEW_CERTIFICATE".equals(action) || "ACTIVATE".equals(action)) {
                 provisioningManager.rotateCertificate();
-            } else if("DEACTIVATE".equals(action)) {
+            } else if("DEACTIVATE".equals(action) || "REMOVE_DEVICE_CERT".equals(action)) {
                 try {
-                    provisioningManager.removeCertificate();
+                    provisioningManager.removeDeviceCertificate();
                 } catch (Exception e) {
-                    Logger.e(DeviceConstants.LOG_TAG, "Error during certificate removal in background push" + e);
+                    Logger.e(DeviceConstants.LOG_TAG, "Error during device certificate removal in background push" + e);
+                }
+            } else if ("REMOVE_FTM_CERT".equals(action)) {
+                try {
+                    provisioningManager.removeFtmCertificate();
+                } catch (Exception e) {
+                    Logger.e(DeviceConstants.LOG_TAG, "Error during ftm certificate removal in background push" + e);
                 }
             } else if ("REMOVE_IDA_CERT".equals(action)) {
                 try {

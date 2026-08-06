@@ -37,4 +37,6 @@ public interface CryptoProvider {
     X509Certificate getFtmCertificate();
 
     void removeDeviceCertificate();
+
+    void removeFtmCertificate();
 }

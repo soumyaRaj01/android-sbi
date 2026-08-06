@@ -112,12 +112,21 @@ public class AndroidKeystoreCryptoProvider
 
     @Override
     public void removeDeviceCertificate() {
-        File file = new File(context.getFilesDir(), CryptoConstants.DEVICE_CERT_FILE);
+        removeCertificate(CryptoConstants.DEVICE_CERT_FILE);
+    }
+
+    @Override
+    public void removeFtmCertificate() {
+        removeCertificate(CryptoConstants.FTM_CERT_FILE);
+    }
+
+    private void removeCertificate(String filename){
+        File file = new File(context.getFilesDir(), filename);
 
         if (file.exists()) {
             boolean deleted = file.delete();
             if (!deleted) {
-                Logger.e(DeviceConstants.LOG_TAG, "Failed to delete device certificate");
+                Logger.e(DeviceConstants.LOG_TAG, "Failed to delete certificate");
             }
         }
     }

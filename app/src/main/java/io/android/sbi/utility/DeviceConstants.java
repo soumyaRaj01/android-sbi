@@ -22,7 +22,7 @@ public class DeviceConstants {
     public static final String PROVIDER_ID = "Tech5_DP";
     public static final String REG_SERVER_VERSION = "0.9.5";
     public static String ENVIRONMENT = "Staging";
-    public static String DOMAIN_URI = "https://api-internal-preprod.nsis.nira.go.ug";
+    public static String DOMAIN_URI = "https://api-internal.niraqa1.idencode.link";
     public static final int DEFAULT_TIME_DELAY = 1000;
     public static List<String> environmentList = Arrays.asList("Staging", "Developer", "Pre-Production", "Production");
 

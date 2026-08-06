@@ -7,7 +7,6 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="reset">Reset</string>
-    <string name="browse">Browse</string>
     <string name="p12_config">P12 Config</string>
     <string name="ida_fir_certificate_config">IDA_FIR Certificate Config</string>
     <string name="modality_config">Modality Config</string>
@@ -17,7 +16,6 @@
     <string name="device_type">Device Type</string>
     <string name="response_delay">Response Delay</string>
     <string name="milliseconds">Milliseconds</string>
-    <string name="file_path">File path</string>
     <string name="score">Score</string>
     <string name="finger">Finger</string>
     <string name="iris">Iris</string>

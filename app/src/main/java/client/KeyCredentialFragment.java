@@ -19,6 +19,7 @@ import io.android.sbi.crypto.AndroidKeystoreCryptoProvider;
 import io.android.sbi.crypto.CryptoProvider;
 import io.android.sbi.crypto.DmsClient;
 import io.android.sbi.crypto.ProvisioningManager;
+import io.android.sbi.secureLib.DeviceKeystore;
 import io.android.sbi.utility.DeviceConstants;
 import io.android.sbi.utility.Logger;
 
@@ -30,6 +31,7 @@ public class KeyCredentialFragment extends Fragment {
 
     public static final String KEY_TYPE_DEVICE = "Device Key";
     public static final String KEY_TYPE_FTM = "FTM Key";
+    public static final String KEY_TYPE_IDA = "IDA_FIR Certificate";
 
     // the fragment initialization parameters
     public static final String ARG_KEY_LABEL = "keyLabel";
@@ -43,6 +45,7 @@ public class KeyCredentialFragment extends Fragment {
     private TextView expiresOnTextView;
     private String keyLabel;
     private CryptoProvider cryptoProvider;
+    private DeviceKeystore deviceKeystore;
 
     public KeyCredentialFragment() {
         // Required empty public constructor
@@ -61,6 +64,7 @@ public class KeyCredentialFragment extends Fragment {
         Button checkNowButton = rootView.findViewById(R.id.check_now_button);
 
         cryptoProvider = new AndroidKeystoreCryptoProvider(requireContext().getApplicationContext());
+        deviceKeystore = new DeviceKeystore(requireContext().getApplicationContext());
         keyLabel = getArguments() != null ? getArguments().getString(ARG_KEY_LABEL) : null;
 
         if (keyLabel != null) {
@@ -78,8 +82,9 @@ public class KeyCredentialFragment extends Fragment {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 DmsClient dmsClient = new DmsClient(requireContext());
+                DeviceKeystore deviceKeystore = new DeviceKeystore(requireContext());
                 ProvisioningManager provisioningManager =
-                        new ProvisioningManager(cryptoProvider, dmsClient);
+                        new ProvisioningManager(cryptoProvider, dmsClient, deviceKeystore);
 
                 provisioningManager.initialize();
             } catch (Exception e) {
@@ -93,9 +98,14 @@ public class KeyCredentialFragment extends Fragment {
     }
 
     private void refreshStatus() {
-        X509Certificate certificate = KEY_TYPE_FTM.equals(keyLabel)
-                ? cryptoProvider.getFtmCertificate()
-                : cryptoProvider.getDeviceCertificate();
+        X509Certificate certificate;
+        if (KEY_TYPE_FTM.equals(keyLabel)) {
+            certificate = cryptoProvider.getFtmCertificate();
+        } else if (KEY_TYPE_IDA.equals(keyLabel)) {
+            certificate = deviceKeystore.getIdaCertificate();
+        } else {
+            certificate = cryptoProvider.getDeviceCertificate();
+        }
 
         if (certificate == null) {
             statusTextView.setText(R.string.key_status_not_provisioned);

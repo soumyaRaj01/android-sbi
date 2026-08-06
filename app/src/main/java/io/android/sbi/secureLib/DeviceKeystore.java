@@ -138,6 +138,26 @@ public class DeviceKeystore {
                 new ByteArrayInputStream(Base64.getDecoder().decode(certificateStr)));
     }
 
+    public boolean hasIdaCertificate() {
+        return !sharedPreferences.getString(ClientConstants.CERTIFICATE_TO_ENCRYPT_BIO, "").isEmpty();
+    }
+
+    public void removeIdaCertificate() {
+        sharedPreferences.edit().remove(ClientConstants.CERTIFICATE_TO_ENCRYPT_BIO).apply();
+    }
+
+    public X509Certificate getIdaCertificate() {
+        if (!hasIdaCertificate()) {
+            return null;
+        }
+        try {
+            return (X509Certificate) getCertificateToEncryptCaptureBioValue();
+        } catch (CertificateException e) {
+            Logger.e(DeviceConstants.LOG_TAG, "getIdaCertificate: " + e.getMessage());
+            return null;
+        }
+    }
+
     public boolean loadCertificateFromFile(String fileName) {
         File file = new File(context.getFilesDir(), fileName);
 
@@ -160,7 +180,7 @@ public class DeviceKeystore {
         }).start();
     }
 
-    private boolean storeCertificateBytes(byte[] certificateBytes) throws CertificateException, CertificateEncodingException {
+    public boolean storeCertificateBytes(byte[] certificateBytes) throws CertificateException, CertificateEncodingException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(certificateBytes));
         String certificateStr = Base64.getEncoder().encodeToString(certificate.getEncoded());

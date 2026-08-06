@@ -1,5 +1,6 @@
 package io.android.sbi.crypto;
 
+import io.android.sbi.secureLib.DeviceKeystore;
 import io.android.sbi.utility.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -9,10 +10,12 @@ public class ProvisioningManager {
 
     private final CryptoProvider cryptoProvider;
     private final DmsClient dmsClient;
+    private final DeviceKeystore deviceKeystore;
 
-    public ProvisioningManager(CryptoProvider cryptoProvider, DmsClient  dmsClient) {
+    public ProvisioningManager(CryptoProvider cryptoProvider, DmsClient dmsClient, DeviceKeystore deviceKeystore) {
         this.cryptoProvider = cryptoProvider;
         this.dmsClient = dmsClient;
+        this.deviceKeystore = deviceKeystore;
     }
 
     public void initialize() throws Exception {
@@ -30,6 +33,10 @@ public class ProvisioningManager {
 
         if (!cryptoProvider.hasDeviceCertificate()) {
             provisionDeviceCertificate();
+        }
+
+        if (!deviceKeystore.hasIdaCertificate()) {
+            provisionIdaCertificate();
         }
     }
 
@@ -53,6 +60,15 @@ public class ProvisioningManager {
         }
     }
 
+    private void provisionIdaCertificate() {
+        try {
+            String certificate = dmsClient.fetchIdaCertificate();
+            deviceKeystore.storeCertificateBytes(certificate.getBytes());
+        } catch (Exception e) {
+            Logger.e("ProvisioningManager", "Error provisioning IDA certificate: " + e.getMessage());
+        }
+    }
+
     public void rotateCertificate() {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
@@ -68,5 +84,9 @@ public class ProvisioningManager {
 
     public void removeCertificate() {
         cryptoProvider.removeDeviceCertificate();
+    }
+
+    public void removeIdaCertificate() {
+        deviceKeystore.removeIdaCertificate();
     }
 }

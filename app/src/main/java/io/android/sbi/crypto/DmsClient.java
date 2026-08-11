@@ -123,6 +123,13 @@ public class DmsClient {
         return certificate;
     }
 
+    public void clearCachedToken() {
+        if (sharedPreferences != null) {
+            sharedPreferences.edit().remove(ClientConstants.FCM_TOKEN).apply();
+        }
+        Logger.d("", "Cached FCM token cleared");
+    }
+
     public void sendTokenToDmsServer(String token) {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {

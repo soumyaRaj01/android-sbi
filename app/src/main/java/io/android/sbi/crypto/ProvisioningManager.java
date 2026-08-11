@@ -93,4 +93,8 @@ public class ProvisioningManager {
     public void removeIdaCertificate() {
         deviceKeystore.removeIdaCertificate();
     }
+
+    public void removeToken() {
+        dmsClient.clearCachedToken();
+    }
 }

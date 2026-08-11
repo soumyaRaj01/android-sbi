@@ -50,6 +50,12 @@ public class FCMService extends FirebaseMessagingService {
                 } catch (Exception e) {
                     Logger.e(DeviceConstants.LOG_TAG, "Error during IDA certificate removal in background push" + e);
                 }
+            } else if ("REMOVE_TOKEN".equals(action)) {
+                try {
+                    provisioningManager.removeToken();
+                } catch (Exception e) {
+                    Logger.e(DeviceConstants.LOG_TAG, "Error clearing cached FCM token in background push" + e);
+                }
             }
         }
     }

@@ -24,7 +24,7 @@ public class ClientConstants {
     public static final String DEVICE_USAGE = "device_usage";
     public static final String CERTIFICATE_TO_ENCRYPT_BIO = "certificate_to_encrypt_bio";
     public static final String DMS_BASE_URL = "dms_base_url";
-    public static final String DEFAULT_DMS_BASE_URL = "http://127.0.0.1:54535";
+    public static final String DEFAULT_DMS_BASE_URL = "https://dms.idencode.link";
     public static final String FCM_TOKEN = "fcm_token";
 
 }

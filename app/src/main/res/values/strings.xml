@@ -8,7 +8,7 @@
     <string name="cancel">Cancel</string>
     <string name="reset">Reset</string>
     <string name="keys_config">Keys</string>
-    <string name="ida_fir_certificate_config">IDA_FIR Certificate</string>
+    <string name="certificates_config">Certificates</string>
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
     <string name="face">Face</string>
@@ -40,7 +40,8 @@
     <string name="discover">Discover</string>
     <string name="capture">Capture</string>
     <string name="key_label">Key Label</string>
-    <string name="check_now">Check Now</string>
+    <string name="refresh">Refresh</string>
+    <string name="key_status_checking">Status: Checking...</string>
     <string name="key_status_not_provisioned">Status: Not provisioned yet</string>
     <string name="key_status_present">Status: Certificate present</string>
     <string name="issued_on">Issued On: %1$s</string>

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
@@ -12,16 +11,10 @@ import androidx.fragment.app.Fragment;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.concurrent.Executors;
-
 import io.android.sbi.R;
 import io.android.sbi.crypto.AndroidKeystoreCryptoProvider;
 import io.android.sbi.crypto.CryptoProvider;
-import io.android.sbi.crypto.DmsClient;
-import io.android.sbi.crypto.ProvisioningManager;
 import io.android.sbi.secureLib.DeviceKeystore;
-import io.android.sbi.utility.DeviceConstants;
-import io.android.sbi.utility.Logger;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -61,7 +54,6 @@ public class KeyCredentialFragment extends Fragment {
         statusTextView = rootView.findViewById(R.id.key_status_textview);
         issuedOnTextView = rootView.findViewById(R.id.key_issued_on_textview);
         expiresOnTextView = rootView.findViewById(R.id.key_expires_on_textview);
-        Button checkNowButton = rootView.findViewById(R.id.check_now_button);
 
         cryptoProvider = new AndroidKeystoreCryptoProvider(requireContext().getApplicationContext());
         deviceKeystore = new DeviceKeystore(requireContext().getApplicationContext());
@@ -71,33 +63,26 @@ public class KeyCredentialFragment extends Fragment {
             keyTextView.setText(keyLabel);
         }
 
-        checkNowButton.setOnClickListener(v -> checkNow());
-
         refreshStatus();
 
         return rootView;
     }
 
-    private void checkNow() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                DmsClient dmsClient = new DmsClient(requireContext());
-                DeviceKeystore deviceKeystore = new DeviceKeystore(requireContext());
-                ProvisioningManager provisioningManager =
-                        new ProvisioningManager(cryptoProvider, dmsClient, deviceKeystore);
-
-                provisioningManager.initialize();
-            } catch (Exception e) {
-                Logger.e(DeviceConstants.LOG_TAG, "Check Now provisioning failed: " + e.getMessage());
-            }
-
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(this::refreshStatus);
-            }
-        });
+    public void setKeyLabel(String keyLabel) {
+        this.keyLabel = keyLabel;
+        if (keyTextView != null) {
+            keyTextView.setText(keyLabel);
+            refreshStatus();
+        }
     }
 
-    private void refreshStatus() {
+    public void showCheckingStatus() {
+        statusTextView.setText(R.string.key_status_checking);
+        issuedOnTextView.setText("");
+        expiresOnTextView.setText("");
+    }
+
+    public void refreshStatus() {
         X509Certificate certificate;
         if (KEY_TYPE_FTM.equals(keyLabel)) {
             certificate = cryptoProvider.getFtmCertificate();

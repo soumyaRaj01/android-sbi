@@ -19,12 +19,20 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 import io.android.sbi.R;
 import io.android.sbi.constants.ClientConstants;
+import io.android.sbi.crypto.AndroidKeystoreCryptoProvider;
+import io.android.sbi.crypto.CryptoProvider;
+import io.android.sbi.crypto.DmsClient;
+import io.android.sbi.crypto.ProvisioningManager;
 import io.android.sbi.secureLib.DeviceKeystore;
 import io.android.sbi.utility.DeviceConstants;
+import io.android.sbi.utility.Logger;
 
 /**
  * @author Anshul.Vanawat
@@ -80,28 +88,13 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         deviceKeyFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.deviceKeyFragment);
-
-        if (deviceKeyFragment != null) {
-            Bundle bundle = new Bundle();
-            bundle.putString(ARG_KEY_LABEL, KEY_TYPE_DEVICE);
-            deviceKeyFragment.setArguments(bundle);
-        }
+        configureKeyFragment(deviceKeyFragment, KEY_TYPE_DEVICE);
 
         ftmKeyFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.ftmKeyFragment);
-
-        if (ftmKeyFragment != null) {
-            Bundle bundle = new Bundle();
-            bundle.putString(ARG_KEY_LABEL, KEY_TYPE_FTM);
-            ftmKeyFragment.setArguments(bundle);
-        }
+        configureKeyFragment(ftmKeyFragment, KEY_TYPE_FTM);
 
         idaCertFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.idaCertFragment);
-
-        if (idaCertFragment != null) {
-            Bundle bundle = new Bundle();
-            bundle.putString(ARG_KEY_LABEL, KEY_TYPE_IDA);
-            idaCertFragment.setArguments(bundle);
-        }
+        configureKeyFragment(idaCertFragment, KEY_TYPE_IDA);
 
         resetScreen();
     }
@@ -138,8 +131,79 @@ public class ConfigurationActivity extends AppCompatActivity {
         resetScreen();
     }
 
+    public void onCheckNow(View view) {
+        view.setEnabled(false);
+        showCheckingStatus();
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                CryptoProvider cryptoProvider = new AndroidKeystoreCryptoProvider(getApplicationContext());
+                DeviceKeystore deviceKeystore = new DeviceKeystore(getApplicationContext());
+                DmsClient dmsClient = new DmsClient(getApplicationContext());
+                ProvisioningManager provisioningManager = new ProvisioningManager(cryptoProvider, dmsClient, deviceKeystore);
+
+                provisioningManager.initialize();
+                syncFcmToken(dmsClient);
+            } catch (Exception e) {
+                Logger.e(DeviceConstants.LOG_TAG, "Check Now provisioning failed: " + e.getMessage());
+            }
+
+            runOnUiThread(() -> {
+                refreshKeyCredentialStatuses();
+                view.setEnabled(true);
+            });
+        });
+    }
+
+    private void syncFcmToken(DmsClient dmsClient) {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Logger.w(DeviceConstants.LOG_TAG, "Fetching FCM registration token failed" + task.getException());
+                        return;
+                    }
+
+                    dmsClient.sendTokenToDmsServer(task.getResult());
+                });
+    }
+
     private void resetScreen() {
 //        dmsBaseUrlInput.setText(currentDmsBaseUrl);
+    }
+
+    private void configureKeyFragment(KeyCredentialFragment fragment, String keyLabel) {
+        if (fragment == null) {
+            return;
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putString(ARG_KEY_LABEL, keyLabel);
+        fragment.setArguments(bundle);
+        fragment.setKeyLabel(keyLabel);
+    }
+
+    private void showCheckingStatus() {
+        if (deviceKeyFragment != null) {
+            deviceKeyFragment.showCheckingStatus();
+        }
+        if (ftmKeyFragment != null) {
+            ftmKeyFragment.showCheckingStatus();
+        }
+        if (idaCertFragment != null) {
+            idaCertFragment.showCheckingStatus();
+        }
+    }
+
+    private void refreshKeyCredentialStatuses() {
+        if (deviceKeyFragment != null) {
+            deviceKeyFragment.refreshStatus();
+        }
+        if (ftmKeyFragment != null) {
+            ftmKeyFragment.refreshStatus();
+        }
+        if (idaCertFragment != null) {
+            idaCertFragment.refreshStatus();
+        }
     }
 
     private String normalizeDmsBaseUrl(String url) {

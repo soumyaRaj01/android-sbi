@@ -3,6 +3,12 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     compileSdkVersion 36
     buildToolsVersion "30.0.3"
@@ -34,8 +40,20 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['storeFile'] ?: "unused.jks")
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
     buildTypes {
         release {
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
